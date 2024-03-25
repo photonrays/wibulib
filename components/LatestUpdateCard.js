@@ -5,6 +5,7 @@ import getCoverArt from '../utils/getCoverArt'
 import { Link } from 'expo-router'
 import { getMangaTitle } from '../utils/getMangaTitle'
 import getChapterTitle from '../utils/getChapterTitle'
+import { formatNowDistance } from '../utils/dateFns'
 
 export default function LatestUpdateCard({ manga, chapterList }) {
     const width = Dimensions.get('window').width;
@@ -23,9 +24,14 @@ export default function LatestUpdateCard({ manga, chapterList }) {
                     <Text numberOfLines={1} style={{ fontFamily: 'Poppins_400Regular', fontSize: 14, color: COLORS.white }}>
                         {chapterTitle}
                     </Text>
-                    <Text numberOfLines={1} style={{ fontFamily: 'Poppins_400Regular', fontSize: 12, color: COLORS.white }}>
-                        {chapterList[0].relationships?.[0].attributes.name}
-                    </Text>
+                    <View style={{ flexDirection: 'row', gap: 10, justifyContent: 'space-between' }}>
+                        <Text numberOfLines={1} style={{ fontFamily: 'Poppins_400Regular', fontSize: 12, color: COLORS.white }}>
+                            {chapterList[0].relationships?.[0].attributes.name}
+                        </Text>
+                        <Text numberOfLines={1} style={{ fontFamily: 'Poppins_400Regular', fontSize: 12, color: COLORS.white }}>
+                            {formatNowDistance(new Date(chapterList[0].attributes?.readableAt)) || ""}
+                        </Text>
+                    </View>
                 </View>
             </View>
         </Link>

@@ -1,4 +1,3 @@
-import { AuthenticationToken } from './authentication';
 import { Links } from './static';
 
 /**
@@ -239,10 +238,6 @@ export type Login = RequireAtLeastOne<{
     password: string
 }, 'username' | 'email'>;
 
-export type LoginResponse = {
-    result: 'ok' | 'error'
-    token: AuthenticationToken
-};
 
 export type CheckResponse = {
     /** Default: "ok" */
@@ -263,11 +258,6 @@ export type RefreshToken = {
     token: string
 };
 
-export type RefreshResponse = {
-    result: 'ok' | 'error'
-    token?: AuthenticationToken
-    message?: string
-};
 
 export type AccountActivateResponse = {
     result: 'ok'

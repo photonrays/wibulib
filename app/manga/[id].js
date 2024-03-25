@@ -1,14 +1,29 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, Image, Pressable, ScrollView, ImageBackground, FlatList } from 'react-native';
 import { Link, Stack, useLocalSearchParams } from 'expo-router'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { COLORS, images } from '../../constants';
 import { Ionicons, MaterialCommunityIcons, Feather, FontAwesome } from '@expo/vector-icons';
 import Chapter from '../../components/Chapter';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useManga } from '../../contexts/useManga';
+import { useEffect } from 'react';
+import getCoverArt from '../../utils/getCoverArt';
+import { getMangaTitle } from '../../utils/getMangaTitle';
 
 
 export default function Manga() {
     const { id } = useLocalSearchParams()
+    const { updateManga, manga, mangaFeed } = useManga()
+    console.log(mangaFeed)
+
+    useEffect(() => {
+        updateManga(id)
+    }, [])
+
+    const coverArt = getCoverArt(manga)
+    const title = getMangaTitle(manga)
+    const tags = manga?.attributes?.tags?.filter((tag) => tag.attributes.group == 'genre')
+
     const headerHeight = useHeaderHeight()
     return (
         <ScrollView style={{ flex: 1, gap: 10, backgroundColor: COLORS.black }}>
@@ -23,26 +38,26 @@ export default function Manga() {
                 },
                 headerBackVisible: true
             }} />
-            <ImageBackground source={images.cover} style={[styles.backgroundImage, { paddingTop: headerHeight }]} >
+            <ImageBackground source={coverArt} style={[styles.backgroundImage, { paddingTop: headerHeight }]} >
                 <LinearGradient style={[styles.innerContainer, { top: -headerHeight }]} colors={['rgba(0,0,0, 0.6)', COLORS.black]} locations={[0.5, 0.7]}></LinearGradient>
                 <View style={{ flexDirection: 'row', gap: 10, alignItems: 'stretch', marginBottom: 10 }}>
-                    <Image source={images.cover} style={styles.cover} />
+                    <Image source={coverArt} style={styles.cover} />
                     <View style={{ flex: 1, overflow: 'hidden', justifyContent: "center", gap: 4 }}>
                         <Text numberOfLines={10} style={{ fontFamily: 'Poppins_700Bold', fontSize: 18, lineHeight: 22, color: COLORS.white }}>
-                            Shouwaru Tensai Osananajimi to no Shoubu ni Makete Hatsutaiken o Zenbu Ubawareru Hanashi
+                            {title}
                         </Text>
 
                         <View numberOfLines={3} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                             <Ionicons name="person-outline" size={12} color={COLORS.white} />
                             <Text style={{ fontFamily: 'Poppins_400Regular', fontSize: 14, color: COLORS.white }}>
-                                Inukai Anzu, Konata Eru, Neibi
+                                {manga?.relationships?.[0].attributes.name}
                             </Text>
                         </View>
 
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                             <MaterialCommunityIcons name="clock-outline" size={12} color={COLORS.white} />
                             <Text style={{ fontFamily: 'Poppins_400Regular', fontSize: 14, color: COLORS.white }}>
-                                Ongoing
+                                {manga?.attributes.status}
                             </Text>
                         </View>
                     </View>
@@ -50,36 +65,33 @@ export default function Manga() {
             </ImageBackground>
 
             <View style={{ flexDirection: "row", gap: 10, marginBottom: 10, paddingHorizontal: 15 }}>
-                <TouchableOpacity style={{ padding: 6, borderRadius: 5, backgroundColor: COLORS.primary }}>
+                <Pressable style={{ padding: 6, borderRadius: 5, backgroundColor: COLORS.primary }}>
                     <Feather name="bookmark" size={24} color={COLORS.white} />
-                </TouchableOpacity>
-                <TouchableOpacity style={{ padding: 6, paddingHorizontal: 20, borderRadius: 5, backgroundColor: COLORS.gray, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 10, flex: 1 }}>
+                </Pressable>
+                <Pressable style={{ padding: 6, paddingHorizontal: 20, borderRadius: 5, backgroundColor: COLORS.gray, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 10, flex: 1 }}>
                     <Feather name="book-open" size={24} color={COLORS.white} />
                     <Text style={{ color: COLORS.white, fontFamily: 'Poppins_400Regular', fontSize: 16 }}>Read</Text>
-                </TouchableOpacity>
+                </Pressable>
             </View>
 
             <Text numberOfLines={3} style={{ fontFamily: 'Poppins_400Regular', color: COLORS.white, fontSize: 12, paddingHorizontal: 15, marginBottom: 10 }}>
-                The prince-like girl, Asahi, and supposedly normal (but of course handsome and earnest) guy Kuro are in the same club. They agree to pretend to date as a 'Boyfriend/Girlfriend Tutorial'. You know where this is going, it's complete romcom fluff- and if you like that you'll like this.
+                {manga?.attributes.description.en}
             </Text>
 
-            <View style={{ flexDirection: 'row', gap: 10, overflow: 'hidden', paddingHorizontal: 15, marginBottom: 15 }}>
-                <View style={styles.tagContainer}><Text style={styles.tag}>Suggestive</Text></View>
-                <View style={styles.tagContainer}><Text style={styles.tag}>Suggestive</Text></View>
-                <View style={styles.tagContainer}><Text style={styles.tag}>Suggestive</Text></View>
-                <View style={styles.tagContainer}><Text style={styles.tag}>Suggestive</Text></View>
+            <View style={{ paddingHorizontal: 15, marginBottom: 15 }}>
+                <FlatList
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    data={tags}
+                    keyExtractor={tag => tag.id}
+                    renderItem={(obj, index) => <View style={styles.tagContainer}><Text style={styles.tag}>{obj.item.attributes.name.en}</Text></View>}
+                />
             </View>
 
             <View style={{ paddingHorizontal: 15 }}>
-                <Text style={{ fontFamily: 'Poppins_500Medium', fontSize: 14, color: COLORS.white, marginVertical: 10 }}>132 chapter</Text>
-                <View style={{ gap: 15 }}>
-                    <Chapter />
-                    <Chapter />
-                    <Chapter />
-                    <Chapter />
-                    <Chapter />
-                    <Chapter />
-                    <Chapter />
+                <Text style={{ fontFamily: 'Poppins_500Medium', fontSize: 14, color: COLORS.white, marginVertical: 10 }}>{mangaFeed?.length} chapters</Text>
+                <View style={{ gap: 15, marginBottom: 15 }}>
+                    {mangaFeed?.map((obj, index) => <Chapter key={index} chapter={obj} />)}
                 </View>
             </View>
         </ScrollView>
@@ -114,7 +126,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8,
         paddingVertical: 2,
         borderRadius: 5,
-        backgroundColor: '#2c2c2c'
+        backgroundColor: '#2c2c2c',
+        marginRight: 10
     },
     tag: {
         fontFamily: 'Poppins_700Bold',

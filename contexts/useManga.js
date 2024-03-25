@@ -1,36 +1,21 @@
-import { getSearchManga } from "../api/manga";
+import { getMangaId, getMangaIdFeed, getSearchManga } from "../api/manga";
 import { createContext, useContext, useState, useEffect } from "react";
 import useLatestChapters from "../hooks/useLatestChapters";
-import { Includes, MangaContentRating } from "../api/static";
+import { Includes, MangaContentRating, Order } from "../api/static";
 
 export const MangaContext = createContext({
     manga: null,
-    setManga: () => null,
-    latestUpdates: {},
-    setLatestUpdates: () => null,
+    updateManga: () => null,
+    mangaFeed: null,
+    latestUpdates: {}
 });
 
 export function MangaProvider({ children }) {
     const [manga, setManga] = useState(null)
-    const [latestChapters, setLatestChapters] = useState({})
     const [latestUpdates, setLatestUpdates] = useState({});
+    const [mangaFeed, setMangaFeed] = useState()
 
-    const { chapters, chaptersLoading } = useLatestChapters(1)
-
-    useEffect(() => {
-        if (chapters && !chaptersLoading) {
-            const updates = {}
-            for (const chapter of chapters.data) {
-                const mangaId = chapter.relationships?.[1].id
-                if (!updates[mangaId]) {
-                    updates[mangaId] = []
-                }
-                updates[mangaId].push(chapter)
-                setLatestChapters(updates)
-            }
-        }
-    }, [chapters, chaptersLoading])
-
+    const { latestChapters, chaptersLoading } = useLatestChapters(1)
 
     useEffect(() => {
         if (Object.entries(latestChapters).length > 0) {
@@ -48,10 +33,38 @@ export function MangaProvider({ children }) {
                 setLatestUpdates(updates)
             }).catch(err => console.log(err))
         }
-    }, [latestChapters])
+    }, [chaptersLoading])
+
+    const updateManga = async (id) => {
+        const { data } = await getMangaId(id, {
+            includes: [Includes.COVER_ART, Includes.ARTIST, Includes.AUTHOR, Includes.CHAPTER, Includes.TAG],
+        })
+        if (data && data.data) {
+            setManga(data.data)
+        }
+    }
+
+    useEffect(() => {
+        const getCurrentMangaFeed = async (id) => {
+            const requestParams = {
+                limit: 500,
+                includes: [Includes.SCANLATION_GROUP, Includes.USER],
+                order: { volume: Order.DESC, chapter: Order.DESC },
+                contentRating: [MangaContentRating.SAFE, MangaContentRating.EROTICA, MangaContentRating.SUGGESTIVE, MangaContentRating.PORNOGRAPHIC],
+                translatedLanguage: ['vi']
+            };
+            const { data } = await getMangaIdFeed(id, requestParams)
+            if (data) {
+                setMangaFeed(data.data)
+            }
+        }
+        if (manga) {
+            getCurrentMangaFeed(manga.id)
+        }
+    }, [manga])
 
     return (
-        <MangaContext.Provider value={{ manga, setManga, latestUpdates, setLatestUpdates }}>
+        <MangaContext.Provider value={{ manga, updateManga, mangaFeed, latestUpdates }}>
             {children}
         </MangaContext.Provider>
     );

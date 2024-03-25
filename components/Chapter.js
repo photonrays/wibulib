@@ -1,17 +1,21 @@
 import { View, Text } from 'react-native'
 import { FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../constants';
+import getChapterTitle from '../utils/getChapterTitle';
+import { formatNowDistance } from '../utils/dateFns';
 
-export default function Chapter() {
+export default function Chapter({ chapter }) {
+    console.log(chapter)
+    const chapterTitle = getChapterTitle(chapter)
     return (
         <View style={{ gap: 5 }}>
             <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
                 <FontAwesome name="circle" size={6} color="white" />
-                <Text style={{ fontFamily: 'Poppins_400Regular', fontSize: 12, color: COLORS.white }}>
-                    Ch.132 - Making Things Worse
+                <Text numberOfLines={1} style={{ fontFamily: 'Poppins_400Regular', fontSize: 12, color: COLORS.white }}>
+                    {chapterTitle}
                 </Text>
             </View>
-            <Text style={{ fontFamily: 'Poppins_400Regular', fontSize: 10, color: COLORS.white }}>6/15/2023 . Kamen</Text>
+            <Text style={{ fontFamily: 'Poppins_400Regular', fontSize: 10, color: COLORS.white }}>{formatNowDistance(new Date(chapter.attributes?.readableAt)) || ""} {chapter.relationships?.[1].attributes?.name}</Text>
         </View>
     )
 }

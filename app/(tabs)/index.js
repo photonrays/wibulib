@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, TouchableHighlight, Image, ScrollView, Animated } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableHighlight, Image, ScrollView, Animated } from 'react-native';
 import { useState, useEffect, useRef } from 'react'
 import { COLORS } from '../../constants'
 import { SectionTextHeader, PopularCard, LatestUpdateCard, Card } from '../../components';
@@ -16,18 +16,10 @@ export default function index() {
     const scrollX = useRef(new Animated.Value(0)).current
     const { latestUpdates } = useManga();
 
-    const viewableItemChanged = useRef(({ viewableItem }) => {
-        setCurrentIndex(viewableItem[0].index)
-    }).current
-
-    const _viewabilityConfig = {
-        viewAreaCoveragePercentThreshold: 50,
-    }
-
     return (
         <ScrollView style={styles.container}>
             <View style={{ marginBottom: 20 }}>
-                <Text style={{ fontFamily: 'Poppins_500Medium', fontSize: 20, lineHeight: 22, color: COLORS.white, position: 'absolute', left: 15, top: headerHeight }}>
+                <Text style={{ fontFamily: 'Poppins_500Medium', fontSize: 20, lineHeight: 22, color: COLORS.white, position: 'absolute', left: 15, top: headerHeight, zIndex: 10 }}>
                     Popular New Title
                 </Text>
                 {!isLoading && <FlatList
@@ -40,7 +32,7 @@ export default function index() {
                     bounces={false}
                     onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], { useNativeDriver: false })}
                     scrollEventThrottle={32}
-                    viewabilityConfig={_viewabilityConfig}
+                    viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
                     ref={slideRef}
                 />}
 

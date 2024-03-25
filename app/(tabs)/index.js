@@ -5,6 +5,8 @@ import { SectionTextHeader, PopularCard, LatestUpdateCard, Card } from '../../co
 import { Stack, router } from 'expo-router';
 import { useHeaderHeight } from '@react-navigation/elements'
 import useFeaturedTitles from '../../hooks/useFeatureTitles';
+import { useManga } from '../../contexts/useManga';
+
 
 export default function index() {
     const [currentIndex, setCurrentIndex] = useState(0)
@@ -12,6 +14,7 @@ export default function index() {
     const { data: featuredTitles, isLoading, error } = useFeaturedTitles()
     const slideRef = useRef(null)
     const scrollX = useRef(new Animated.Value(0)).current
+    const { latestUpdates } = useManga();
 
     const viewableItemChanged = useRef(({ viewableItem }) => {
         setCurrentIndex(viewableItem[0].index)
@@ -48,10 +51,17 @@ export default function index() {
                     <SectionTextHeader>Latest Update</SectionTextHeader>
                     <TouchableHighlight onPress={() => router.push("/latest")}><Text style={{ fontFamily: 'Poppins_400Regular', color: COLORS.white }}>View all</Text></TouchableHighlight>
                 </View>
-                <FlatList
-                    data={[{}, {}, {}, {}]}
-                    renderItem={(item) => <LatestUpdateCard />}
-                />
+                {Object.entries(latestUpdates).length < 1 ? (
+                    <div>Loading</div>
+                ) : (
+                    Object.entries(latestUpdates)
+                        .slice(0, 6)
+                        .map(([mangaId, { manga, chapterList }]) => {
+                            return (
+                                <LatestUpdateCard key={mangaId} manga={manga} chapterList={chapterList} />
+                            );
+                        })
+                )}
             </View>
 
             <View style={{ marginBottom: 20, marginHorizontal: 15 }}>

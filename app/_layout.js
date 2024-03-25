@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router/stack';
 import { useFonts, Poppins_700Bold, Poppins_400Regular, Poppins_500Medium } from '@expo-google-fonts/poppins'
 import { Text } from 'react-native';
+import { MangaProvider } from '../contexts/useManga';
 
 
 export default function AppLayout() {
@@ -15,8 +16,10 @@ export default function AppLayout() {
     }
 
     return (
-        <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack>
+        <MangaProvider>
+            <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            </Stack>
+        </MangaProvider>
     );
 }

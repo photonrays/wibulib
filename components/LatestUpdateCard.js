@@ -1,23 +1,34 @@
 import React from 'react'
-import { Image, StyleSheet, Text, View } from 'react-native'
+import { Dimensions, Image, StyleSheet, Text, View } from 'react-native'
 import { COLORS, images } from '../constants'
+import getCoverArt from '../utils/getCoverArt'
+import { Link } from 'expo-router'
+import { getMangaTitle } from '../utils/getMangaTitle'
+import getChapterTitle from '../utils/getChapterTitle'
 
-export default function LatestUpdateCard() {
+export default function LatestUpdateCard({ manga, chapterList }) {
+    const width = Dimensions.get('window').width;
+    const coverArt = getCoverArt(manga)
+    const title = getMangaTitle(manga)
+    const chapterTitle = getChapterTitle(chapterList?.[0])
+
     return (
-        <View style={{ height: 80, flexDirection: 'row', gap: 10, alignItems: 'stretch', marginBottom: 10 }}>
-            <Image source={images.cover} style={styles.cover} />
-            <View style={{ flex: 1, maxHeight: 80, overflow: 'hidden', justifyContent: "space-between" }}>
-                <Text numberOfLines={1} style={{ fontFamily: 'Poppins_700Bold', fontSize: 16, lineHeight: 20, color: COLORS.white }}>
-                    Shouwaru Tensai Osananajimi to no Shoubu ni Makete Hatsutaiken o Zenbu Ubawareru Hanashi
-                </Text>
-                <Text numberOfLines={1} style={{ fontFamily: 'Poppins_400Regular', fontSize: 14, color: COLORS.white }}>
-                    Chap 7
-                </Text>
-                <Text numberOfLines={1} style={{ fontFamily: 'Poppins_400Regular', fontSize: 12, color: COLORS.white }}>
-                    BBB-translation
-                </Text>
+        <Link href={`./manga/${manga.id}`}>
+            <View style={{ width: width - 30, height: 80, flexDirection: 'row', gap: 10, alignItems: 'stretch', marginBottom: 10 }}>
+                <Image source={coverArt} style={styles.cover} />
+                <View style={{ flex: 1, maxHeight: 80, overflow: 'hidden', justifyContent: "space-between" }}>
+                    <Text numberOfLines={1} style={{ fontFamily: 'Poppins_700Bold', fontSize: 16, lineHeight: 20, color: COLORS.white }}>
+                        {title}
+                    </Text>
+                    <Text numberOfLines={1} style={{ fontFamily: 'Poppins_400Regular', fontSize: 14, color: COLORS.white }}>
+                        {chapterTitle}
+                    </Text>
+                    <Text numberOfLines={1} style={{ fontFamily: 'Poppins_400Regular', fontSize: 12, color: COLORS.white }}>
+                        {chapterList[0].relationships?.[0].attributes.name}
+                    </Text>
+                </View>
             </View>
-        </View>
+        </Link>
     )
 }
 

@@ -17,7 +17,7 @@ export default function PopularCard({ manga }) {
     const tags = manga.attributes.tags.filter((tag) => tag.attributes.group == 'genre')
 
     return (
-        <Link style={{ width: width, height: 'auto' }} href={`./manga/${manga.id}`}>
+        <Link style={{ width: width, height: 'auto' }} href={`/manga/${manga.id}`}>
             <ImageBackground source={coverArt} style={styles.backgroundImage} >
                 <LinearGradient style={[styles.innerContainer, { top: -headerHeight }]} colors={['rgba(0,0,0, 0.6)', COLORS.black]} locations={[0.6, 0.8]}></LinearGradient>
                 <View style={{ height: 160, width: '100%', flexDirection: 'row', gap: 10, marginBottom: 10, marginTop: headerHeight, overflow: 'hidden', paddingHorizontal: 15 }}>

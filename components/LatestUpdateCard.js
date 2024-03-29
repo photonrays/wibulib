@@ -6,6 +6,8 @@ import { Link } from 'expo-router'
 import { getMangaTitle } from '../utils/getMangaTitle'
 import getChapterTitle from '../utils/getChapterTitle'
 import { formatNowDistance } from '../utils/dateFns'
+import { BoldText } from './BoldText'
+import { NormalText } from './NormalText'
 
 export default function LatestUpdateCard({ manga, chapterList }) {
     const width = Dimensions.get('window').width;
@@ -14,23 +16,23 @@ export default function LatestUpdateCard({ manga, chapterList }) {
     const chapterTitle = getChapterTitle(chapterList?.[0])
 
     return (
-        <Link href={`./manga/${manga.id}`}>
-            <View style={{ width: width - 30, height: 80, flexDirection: 'row', gap: 10, alignItems: 'stretch', marginBottom: 10 }}>
-                <Image source={coverArt} style={styles.cover} />
+        <Link href={`./manga/${manga.id}`} style={{ marginBottom: 15 }}>
+            <View style={{ width: width - 30, height: 80, flexDirection: 'row', gap: 10, alignItems: 'stretch' }}>
+                <Image source={{ uri: coverArt }} style={styles.cover} />
                 <View style={{ flex: 1, maxHeight: 80, overflow: 'hidden', justifyContent: "space-between" }}>
-                    <Text numberOfLines={1} style={{ fontFamily: 'Poppins_700Bold', fontSize: 16, lineHeight: 20, color: COLORS.white }}>
+                    <BoldText numberOfLines={1} style={{ fontSize: 16, lineHeight: 20 }}>
                         {title}
-                    </Text>
-                    <Text numberOfLines={1} style={{ fontFamily: 'Poppins_400Regular', fontSize: 14, color: COLORS.white }}>
+                    </BoldText>
+                    <NormalText numberOfLines={1} style={{ fontSize: 14 }}>
                         {chapterTitle}
-                    </Text>
+                    </NormalText>
                     <View style={{ flexDirection: 'row', gap: 10, justifyContent: 'space-between' }}>
-                        <Text numberOfLines={1} style={{ fontFamily: 'Poppins_400Regular', fontSize: 12, color: COLORS.white }}>
+                        <NormalText numberOfLines={1} style={{ fontSize: 12 }}>
                             {chapterList[0].relationships?.[0].attributes.name}
-                        </Text>
-                        <Text numberOfLines={1} style={{ fontFamily: 'Poppins_400Regular', fontSize: 12, color: COLORS.white }}>
+                        </NormalText>
+                        <NormalText numberOfLines={1} style={{ fontSize: 12 }}>
                             {formatNowDistance(new Date(chapterList[0].attributes?.readableAt)) || ""}
-                        </Text>
+                        </NormalText>
                     </View>
                 </View>
             </View>

@@ -1,7 +1,8 @@
 import axios from "axios";
+import { encode as btoa } from 'base-64'
 
 const MANGADEX_API_URL = 'https://api.mangadex.org';
-const CORS = process.env.CORS_URL
+const CORS = process.env.NEW_CORS_URL
 
 const transformArrayForQueryString = function (name, array = undefined) {
     let qs = '';
@@ -66,13 +67,12 @@ export const createHttpsRequestPromise = function (method, path, options) {
 
     const encodedUrl = btoa(`${MANGADEX_API_URL}${path}`).replace(/\+/g, "-").replace(/\//g, "_")
     console.log('call api...', path, encodedUrl)
-    const headers = new Headers()
-    headers.set('x-requested-with', 'cubari')
     const httpsRequestOptions = {
         method: method,
-        url: `${CORS}v1/cors/${encodedUrl}`,
+        url: `${CORS}/v1/cors/${encodedUrl}`,
         headers: {
-            'x-requested-with': 'cubari'
+            'x-requested-with': 'cubari',
+            'User-Agent': 'wibulib'
         }
     };
 
@@ -88,6 +88,7 @@ export const createHttpsRequestPromise = function (method, path, options) {
         Object.assign(httpsRequestOptions, options);
     }
 
+    console.log(httpsRequestOptions)
 
     return new Promise((resolve, reject) => {
         axios(httpsRequestOptions).then(res => {
@@ -97,7 +98,7 @@ export const createHttpsRequestPromise = function (method, path, options) {
                 statusMessage: res.statusText,
             }
             resolve(resObj)
-        })
+        }).catch(err => console.error(err))
     });
 };
 

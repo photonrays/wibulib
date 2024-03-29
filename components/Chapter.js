@@ -4,6 +4,7 @@ import { COLORS } from '../constants';
 import getChapterTitle from '../utils/getChapterTitle';
 import { formatNowDistance } from '../utils/dateFns';
 import { Link } from 'expo-router';
+import { NormalText } from './NormalText';
 
 export default function Chapter({ chapter }) {
     const chapterTitle = getChapterTitle(chapter)
@@ -12,11 +13,11 @@ export default function Chapter({ chapter }) {
             <View style={{ gap: 5 }}>
                 <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
                     <FontAwesome name="circle" size={6} color="white" />
-                    <Text numberOfLines={1} style={{ fontFamily: 'Poppins_400Regular', fontSize: 12, color: COLORS.white }}>
+                    <NormalText numberOfLines={1} style={{ fontSize: 13 }}>
                         {chapterTitle}
-                    </Text>
+                    </NormalText>
                 </View>
-                <Text style={{ fontFamily: 'Poppins_400Regular', fontSize: 10, color: COLORS.white }}>{formatNowDistance(new Date(chapter.attributes?.readableAt)) || ""} {chapter.relationships?.[1].attributes?.name}</Text>
+                <NormalText style={{ fontSize: 12 }}>{formatNowDistance(new Date(chapter.attributes?.readableAt)) || ""} {chapter.relationships?.[1].attributes?.name}</NormalText>
             </View>
         </Link>
     )

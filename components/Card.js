@@ -2,6 +2,7 @@ import React from 'react'
 import { Image, StyleSheet, Text, View } from 'react-native'
 import { COLORS, images } from '../constants'
 import { useFonts, Poppins_700Bold, Poppins_400Regular } from '@expo-google-fonts/poppins'
+import { BoldText } from './BoldText';
 
 export default function Card() {
     let [fontsLoaded] = useFonts({
@@ -16,9 +17,9 @@ export default function Card() {
         <View style={{ width: 126, gap: 10, marginBottom: 10 }}>
             <Image source={images.cover} style={styles.cover} />
             <View style={{ overflow: 'hidden', justifyContent: "space-between" }}>
-                <Text numberOfLines={2} style={{ fontFamily: 'Poppins_700Bold', fontSize: 16, lineHeight: 20, color: COLORS.white }}>
+                <BoldText numberOfLines={2} style={{ fontSize: 16, lineHeight: 20 }}>
                     Shouwaru Tensai Osananajimi to no Shoubu ni Makete Hatsutaiken o Zenbu Ubawareru Hanashi
-                </Text>
+                </BoldText>
             </View>
         </View>
     )
@@ -38,10 +39,5 @@ const styles = StyleSheet.create({
         paddingVertical: 2,
         borderRadius: 5,
         backgroundColor: '#2c2c2c'
-    },
-    tag: {
-        fontFamily: 'Poppins_700Bold',
-        color: COLORS.white,
-        fontSize: 10
     }
 });

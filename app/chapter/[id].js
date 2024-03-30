@@ -5,10 +5,9 @@ import { useHeaderHeight } from '@react-navigation/elements'
 import { COLORS } from '../../constants'
 import { Stack, router, useLocalSearchParams } from 'expo-router'
 import useChapterPages from '../../hooks/useChapterPages'
-import FitImage from 'react-native-fit-image';
 import { useEffect, useState } from 'react'
 import { Feather } from '@expo/vector-icons';
-import { NormalText, SemiBoldText } from '../../components'
+import { BoldText, ChapterImage, NormalText, SemiBoldText } from '../../components'
 import { useManga } from '../../contexts/useManga'
 import { getMangaTitle } from '../../utils/getMangaTitle'
 import getChapterTitle from '../../utils/getChapterTitle'
@@ -21,8 +20,8 @@ export default function Chapter() {
     const height = Dimensions.get('screen').height
     const [showDetail, setShowDetail] = useState(false)
     const { manga, mangaFeed } = useManga();
+    const [chapterRelation, setChapterRelation] = useState({})
     const chapter = mangaFeed.find(c => c.id === id)
-    const chapterTitle = getChapterTitle(chapter)
 
     const tap = Gesture.Tap()
         .maxDistance(50)
@@ -30,7 +29,27 @@ export default function Chapter() {
             runOnJS(setShowDetail)(!showDetail)
         });
 
+    console.log(manga)
+
+    const chapterTitle = getChapterTitle(chapter)
     const title = getMangaTitle(manga)
+
+    useEffect(() => {
+        if (mangaFeed) {
+            let chapterList = {}
+            const currCID = mangaFeed.findIndex(c => c.id === id)
+            if (currCID === 0 && mangaFeed.length === 1) {
+                chapterList = { prev: null, curr: mangaFeed[currCID], next: null }
+            } else if (currCID === 0) {
+                chapterList = { prev: mangaFeed[currCID + 1], curr: mangaFeed[currCID], next: null }
+            } else if (currCID === mangaFeed.length - 1) {
+                chapterList = { prev: null, curr: mangaFeed[currCID], next: mangaFeed[currCID - 1] }
+            } else {
+                chapterList = { prev: mangaFeed[currCID + 1], curr: mangaFeed[currCID], next: mangaFeed[currCID - 1] }
+            }
+            setChapterRelation(chapterList)
+        }
+    }, [mangaFeed])
 
     return (
         <View style={styles.container}>
@@ -50,7 +69,25 @@ export default function Chapter() {
                     <FlatList
                         contentContainerStyle={{ gap: 10, marginTop: StatusBar.currentHeight, paddingBottom: 40 }}
                         data={pages}
-                        renderItem={(page, index) => <FitImage source={{ uri: page.item }} />}
+                        renderItem={(page, index) => <ChapterImage uri={page.item} />}
+                        ListFooterComponent={(<View style={{ flexDirection: 'row', marginHorizontal: 10 }}>
+                            <View style={{ flex: 1 }}>
+                                {chapterRelation.prev ?
+                                    <>
+                                        <BoldText style={{ fontSize: 18 }}>Previous: </BoldText>
+                                        <SemiBoldText>{getChapterTitle(chapterRelation.prev)}</SemiBoldText>
+                                    </>
+                                    : <BoldText>No previous chapter</BoldText>}
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                {chapterRelation.next ?
+                                    <>
+                                        <BoldText style={{ fontSize: 18 }}>Next: </BoldText>
+                                        <SemiBoldText>{getChapterTitle(chapterRelation.next)}</SemiBoldText>
+                                    </>
+                                    : <BoldText>No next chapter</BoldText>}
+                            </View>
+                        </View>)}
                     />
                 </View>
             </GestureDetector>

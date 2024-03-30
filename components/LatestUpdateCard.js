@@ -11,7 +11,7 @@ import { NormalText } from './NormalText'
 
 export default function LatestUpdateCard({ manga, chapterList }) {
     const width = Dimensions.get('window').width;
-    const coverArt = getCoverArt(manga)
+    const coverArt = getCoverArt(manga).toString()
     const title = getMangaTitle(manga)
     const chapterTitle = getChapterTitle(chapterList?.[0])
 

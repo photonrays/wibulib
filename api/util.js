@@ -88,8 +88,6 @@ export const createHttpsRequestPromise = function (method, path, options) {
         Object.assign(httpsRequestOptions, options);
     }
 
-    console.log(httpsRequestOptions)
-
     return new Promise((resolve, reject) => {
         axios(httpsRequestOptions).then(res => {
             const resObj = {

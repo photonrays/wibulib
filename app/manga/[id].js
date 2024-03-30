@@ -23,6 +23,7 @@ export default function Manga() {
     }, [])
 
     const coverArt = getCoverArt(manga).toString()
+    console.log(coverArt)
     const title = getMangaTitle(manga)
     const tags = manga?.attributes?.tags?.filter((tag) => tag.attributes.group == 'genre')
 

@@ -2,12 +2,14 @@ import { getMangaId, getMangaIdFeed, getSearchManga } from "../api/manga";
 import { createContext, useContext, useState, useEffect } from "react";
 import useLatestChapters from "../hooks/useLatestChapters";
 import { Includes, MangaContentRating, Order } from "../api/static";
+import { getChapterId } from "../api/chapter";
 
 export const MangaContext = createContext({
     manga: null,
     updateManga: () => null,
     mangaFeed: null,
-    latestUpdates: {}
+    latestUpdates: {},
+    updateMangaByChapterId: () => null,
 });
 
 export function MangaProvider({ children }) {
@@ -44,6 +46,13 @@ export function MangaProvider({ children }) {
         }
     }
 
+    const updateMangaByChapterId = async (cid) => {
+        const { data } = await getChapterId(cid)
+        if (data && data.data) {
+            updateManga(data.data.relationships?.[1].id)
+        }
+    }
+
     useEffect(() => {
         const getCurrentMangaFeed = async (id) => {
             const requestParams = {
@@ -64,7 +73,7 @@ export function MangaProvider({ children }) {
     }, [manga])
 
     return (
-        <MangaContext.Provider value={{ manga, updateManga, mangaFeed, latestUpdates }}>
+        <MangaContext.Provider value={{ manga, updateManga, mangaFeed, latestUpdates, updateMangaByChapterId }}>
             {children}
         </MangaContext.Provider>
     );

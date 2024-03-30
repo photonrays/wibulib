@@ -1,8 +1,9 @@
 import { images } from "../constants"
 import { encode as btoa } from 'base-64'
 
+const CORS = process.env.NEW_CORS_URL;
+
 export default function getCoverArt(manga) {
-    const CORS = process.env.NEW_CORS_URL;
     const placeholder = images.cover
 
     if (!manga) return placeholder;

@@ -1,14 +1,10 @@
 import { useState, useEffect } from 'react';
-import FitImage from 'react-native-fit-image';
-import { COLORS } from '../constants';
-import { Dimensions, Image, View } from 'react-native';
-import { BoldText } from './BoldText';
-
+import { ActivityIndicator, Dimensions, Image, View } from 'react-native';
 
 const ChapterImage = ({ uri }) => {
     const [isLoading, setIsLoading] = useState(true)
     const win = Dimensions.get('window')
-    const [height, setHeight] = useState(win.height * 0.8)
+    const [height, setHeight] = useState(570)
 
     useEffect(() => {
         if (!isLoading) {
@@ -21,7 +17,8 @@ const ChapterImage = ({ uri }) => {
 
     return (
         <View style={{ position: 'relative', width: win.width, height: height }}>
-            <FitImage onLoadEnd={() => setIsLoading(false)} style={{ backgroundColor: COLORS.white }} source={{ uri: uri }} indicatorSize="large" />
+            <ActivityIndicator size="large" style={{ display: isLoading ? 'flex' : 'none', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center' }} />
+            <Image onLoadEnd={() => setIsLoading(false)} source={{ uri: uri }} style={{ width: win.width, height: height }} />
         </View>
 
     );

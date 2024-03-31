@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Image, Pressable, ScrollView, ImageBackground, FlatList, Dimensions } from 'react-native';
-import { Link, Stack, useLocalSearchParams } from 'expo-router'
+import { Link, Stack, router, useLocalSearchParams } from 'expo-router'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { COLORS, images } from '../../constants';
 import { Ionicons, MaterialCommunityIcons, Feather, FontAwesome } from '@expo/vector-icons';
@@ -14,16 +14,14 @@ import { BoldText, NormalText, SemiBoldText } from '../../components';
 
 export default function Manga() {
     const { id } = useLocalSearchParams()
-    const { updateManga, manga, mangaFeed } = useManga()
+    const { manga, mangaFeed, updateManga, clearManga } = useManga()
     const width = Dimensions.get('window').width;
-    const height = Dimensions.get('window').height;
 
     useEffect(() => {
         updateManga(id)
     }, [])
 
     const coverArt = getCoverArt(manga).toString()
-    console.log(coverArt)
     const title = getMangaTitle(manga)
     const tags = manga?.attributes?.tags?.filter((tag) => tag.attributes.group == 'genre')
 
@@ -38,7 +36,11 @@ export default function Manga() {
                 headerTitleStyle: {
                     fontFamily: 'Poppins_700Bold',
                 },
-                headerBackVisible: true
+                headerBackVisible: false,
+                headerLeft: () => <Pressable onPress={() => { clearManga(); router.navigate("/") }} style={{ paddingVertical: 15, paddingHorizontal: 5 }}>
+                    <Feather name="arrow-left" size={24} color={COLORS.white} />
+                </Pressable>,
+
             }} />
             <ImageBackground source={{ uri: coverArt }} style={[styles.backgroundImage, { paddingTop: headerHeight, width: width }]} >
                 <LinearGradient style={[styles.innerContainer, { top: -headerHeight, bottom: 0, width: width }]} colors={['rgba(0,0,0, 0.7)', COLORS.black]} locations={[0.5, 0.7]}></LinearGradient>
@@ -81,13 +83,11 @@ export default function Manga() {
             </NormalText>
 
             <View style={{ paddingHorizontal: 15, marginBottom: 15 }}>
-                <FlatList
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    data={tags}
-                    keyExtractor={tag => tag.id}
-                    renderItem={(obj, index) => <View style={styles.tagContainer}><Text style={styles.tag}>{obj.item.attributes.name.en}</Text></View>}
-                />
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+                    {tags?.map((tag, index) => <View key={index} style={styles.tagContainer}>
+                        <Text style={styles.tag}>{tag.attributes.name.en}</Text>
+                    </View>)}
+                </View>
             </View>
             <View style={{ paddingHorizontal: 15 }}>
                 <SemiBoldText style={{ marginVertical: 10, fontSize: 16 }}>{mangaFeed?.length} chapters</SemiBoldText>
@@ -119,11 +119,10 @@ const styles = StyleSheet.create({
     tagContainer: {
         justifyContent: 'center',
         alignItems: 'center',
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        borderRadius: 5,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 10,
         backgroundColor: '#2c2c2c',
-        marginRight: 10
     },
     tag: {
         fontFamily: 'Poppins_700Bold',

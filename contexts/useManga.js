@@ -10,6 +10,7 @@ export const MangaContext = createContext({
     mangaFeed: null,
     latestUpdates: {},
     updateMangaByChapterId: () => null,
+    clearManga: () => null,
 });
 
 export function MangaProvider({ children }) {
@@ -38,11 +39,13 @@ export function MangaProvider({ children }) {
     }, [chaptersLoading])
 
     const updateManga = async (id) => {
-        const { data } = await getMangaId(id, {
-            includes: [Includes.COVER_ART, Includes.ARTIST, Includes.AUTHOR, Includes.CHAPTER, Includes.TAG],
-        })
-        if (data && data.data) {
-            setManga(data.data)
+        if (id) {
+            const { data } = await getMangaId(id, {
+                includes: [Includes.COVER_ART, Includes.ARTIST, Includes.AUTHOR, Includes.CHAPTER, Includes.TAG],
+            })
+            if (data && data.data) {
+                setManga(data.data)
+            }
         }
     }
 
@@ -72,8 +75,13 @@ export function MangaProvider({ children }) {
         }
     }, [manga])
 
+    const clearManga = () => {
+        setManga(null)
+        setMangaFeed()
+    }
+
     return (
-        <MangaContext.Provider value={{ manga, updateManga, mangaFeed, latestUpdates, updateMangaByChapterId }}>
+        <MangaContext.Provider value={{ manga, updateManga, mangaFeed, latestUpdates, updateMangaByChapterId, clearManga }}>
             {children}
         </MangaContext.Provider>
     );

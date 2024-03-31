@@ -1,8 +1,8 @@
 import React from 'react'
-import { Dimensions, Image, StyleSheet, Text, View } from 'react-native'
+import { Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-native'
 import { COLORS, images } from '../constants'
 import getCoverArt from '../utils/getCoverArt'
-import { Link } from 'expo-router'
+import { Link, router } from 'expo-router'
 import { getMangaTitle } from '../utils/getMangaTitle'
 import getChapterTitle from '../utils/getChapterTitle'
 import { formatNowDistance } from '../utils/dateFns'
@@ -16,7 +16,7 @@ export default function LatestUpdateCard({ manga, chapterList }) {
     const chapterTitle = getChapterTitle(chapterList?.[0])
 
     return (
-        <Link href={`./manga/${manga.id}`} style={{ marginBottom: 15 }}>
+        <Pressable onPress={() => router.push({ pathname: `./chapter/${chapterList?.[0].id}`, params: { mangaId: manga.id } })} style={{ marginBottom: 15 }}>
             <View style={{ width: width - 30, height: 80, flexDirection: 'row', gap: 10, alignItems: 'stretch' }}>
                 <Image source={{ uri: coverArt }} style={styles.cover} />
                 <View style={{ flex: 1, maxHeight: 80, overflow: 'hidden', justifyContent: "space-between" }}>
@@ -36,7 +36,7 @@ export default function LatestUpdateCard({ manga, chapterList }) {
                     </View>
                 </View>
             </View>
-        </Link>
+        </Pressable>
     )
 }
 

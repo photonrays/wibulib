@@ -1,27 +1,30 @@
-import { Image, ScrollView, Text, View, Dimensions, FlatList, Pressable, StyleSheet, SafeAreaView, StatusBar } from 'react-native'
-import { GestureDetector, Gesture } from 'react-native-gesture-handler'
+import { Image, ScrollView, Text, View, Dimensions, Pressable, StyleSheet, SafeAreaView, StatusBar } from 'react-native'
+import { GestureDetector, Gesture, FlatList } from 'react-native-gesture-handler'
 import { runOnJS } from 'react-native-reanimated'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { COLORS } from '../../constants'
 import { Stack, router, useLocalSearchParams } from 'expo-router'
 import useChapterPages from '../../hooks/useChapterPages'
-import { useEffect, useState } from 'react'
-import { Feather } from '@expo/vector-icons';
+import { useEffect, useRef, useState } from 'react'
+import { Feather, AntDesign } from '@expo/vector-icons';
 import { BoldText, ChapterImage, NormalText, SemiBoldText } from '../../components'
 import { useManga } from '../../contexts/useManga'
 import { getMangaTitle } from '../../utils/getMangaTitle'
 import getChapterTitle from '../../utils/getChapterTitle'
+import Slider from '@react-native-community/slider';
 
 
 export default function Chapter() {
-    const { id } = useLocalSearchParams();
+    const { id, mangaId } = useLocalSearchParams();
     const { pages, isLoading } = useChapterPages(id)
     const width = Dimensions.get('window').width
     const height = Dimensions.get('screen').height
     const [showDetail, setShowDetail] = useState(false)
-    const { manga, mangaFeed } = useManga();
-    const [chapterRelation, setChapterRelation] = useState({})
-    const chapter = mangaFeed.find(c => c.id === id)
+    const { manga, mangaFeed, updateManga, updateMangaByChapterId, clearManga } = useManga();
+    const [chapterRelation, setChapterRelation] = useState(null)
+    const [currentIndex, setCurrentIndex] = useState(1);
+    const flatlistRef = useRef(null)
+    const sliderRef = useRef(null);
 
     const tap = Gesture.Tap()
         .maxDistance(50)
@@ -29,27 +32,51 @@ export default function Chapter() {
             runOnJS(setShowDetail)(!showDetail)
         });
 
-    console.log(manga)
-
-    const chapterTitle = getChapterTitle(chapter)
-    const title = getMangaTitle(manga)
+    useEffect(() => {
+        if (mangaId) {
+            updateManga(mangaId)
+        }
+    }, [mangaId])
 
     useEffect(() => {
         if (mangaFeed) {
-            let chapterList = {}
             const currCID = mangaFeed.findIndex(c => c.id === id)
-            if (currCID === 0 && mangaFeed.length === 1) {
-                chapterList = { prev: null, curr: mangaFeed[currCID], next: null }
-            } else if (currCID === 0) {
-                chapterList = { prev: mangaFeed[currCID + 1], curr: mangaFeed[currCID], next: null }
-            } else if (currCID === mangaFeed.length - 1) {
-                chapterList = { prev: null, curr: mangaFeed[currCID], next: mangaFeed[currCID - 1] }
-            } else {
-                chapterList = { prev: mangaFeed[currCID + 1], curr: mangaFeed[currCID], next: mangaFeed[currCID - 1] }
+            if (currCID !== -1) {
+                let chapterList = {}
+                if (currCID === 0 && mangaFeed.length === 1) {
+                    chapterList = { prev: null, curr: mangaFeed[currCID], next: null }
+                } else if (currCID === 0) {
+                    chapterList = { prev: mangaFeed[currCID + 1], curr: mangaFeed[currCID], next: null }
+                } else if (currCID === mangaFeed.length - 1) {
+                    chapterList = { prev: null, curr: mangaFeed[currCID], next: mangaFeed[currCID - 1] }
+                } else {
+                    chapterList = { prev: mangaFeed[currCID + 1], curr: mangaFeed[currCID], next: mangaFeed[currCID - 1] }
+                }
+                setChapterRelation(chapterList)
             }
-            setChapterRelation(chapterList)
         }
     }, [mangaFeed])
+
+    const handlePageChange = (page) => {
+        setCurrentIndex(page)
+        flatlistRef.current.scrollToIndex({ animated: false, index: page - 1 })
+    }
+
+    onViewableItemsChanged = ({ viewableItems }) => {
+        const index = viewableItems.length === 1 ? viewableItems[0].index + 1 : viewableItems[1].index + 1
+        setCurrentIndex(index)
+        sliderRef.current.setNativeProps({ value: parseInt(index) });
+    }
+
+    if (!chapterRelation) {
+        return (
+            <View style={styles.container}>
+                <Stack.Screen options={{
+                    headerShown: false
+                }} />
+                <BoldText>Loading</BoldText>
+            </View>)
+    }
 
     return (
         <View style={styles.container}>
@@ -57,42 +84,83 @@ export default function Chapter() {
                 headerShown: false
             }} />
             <StatusBar backgroundColor={`${showDetail ? 'rgba(0, 0, 0, 0.7)' : 'transparent'}`} />
-            <View style={[styles.detail, { top: StatusBar.currentHeight, width: width, display: showDetail ? 'flex' : 'none' }]}>
-                <Pressable onPress={() => router.back()} style={{ paddingVertical: 15, paddingHorizontal: 5 }}><Feather name="arrow-left" size={24} color={COLORS.white} /></Pressable>
-                <View style={{ flex: 1 }}>
-                    <SemiBoldText numberOfLines={1} style={{ fontSize: 16 }}>{title}</SemiBoldText>
-                    <NormalText style={{ fontSize: 14 }}>Chapter {chapter.attributes.chapter}</NormalText>
-                </View>
+            <View style={[styles.detail, { backgroundColor: 'rgba(0, 0, 0, 0.7)', top: StatusBar.currentHeight, width: width, display: showDetail ? 'flex' : 'none' }]}>
+                <Pressable onPress={() => { router.back() }} style={{ paddingVertical: 15, paddingHorizontal: 5 }}><Feather name="arrow-left" size={24} color={COLORS.white} /></Pressable>
+                <Pressable onPress={() => { router.navigate(`/manga/${manga.id}`) }} style={{ flex: 1 }}>
+                    <SemiBoldText numberOfLines={1} style={{ fontSize: 18 }}>{getMangaTitle(manga)}</SemiBoldText>
+                    <NormalText style={{ fontSize: 14 }}>Chapter {chapterRelation.curr.attributes.chapter}</NormalText>
+                </Pressable>
             </View>
             <GestureDetector gesture={Gesture.Exclusive(tap)}>
                 <View style={{ flex: 1 }}>
                     <FlatList
+                        onViewableItemsChanged={e => onViewableItemsChanged(e)}
+                        ref={flatlistRef}
                         contentContainerStyle={{ gap: 10, marginTop: StatusBar.currentHeight, paddingBottom: 40 }}
                         data={pages}
                         renderItem={(page, index) => <ChapterImage uri={page.item} />}
-                        ListFooterComponent={(<View style={{ flexDirection: 'row', marginHorizontal: 10 }}>
+                        onScrollToIndexFailed={info => {
+                            const wait = new Promise(resolve => setTimeout(resolve, 500));
+                            wait.then(() => {
+                                flatlistRef.current?.scrollToIndex({ index: info.index, animated: false });
+                            });
+                        }}
+                        ListFooterComponent={(<View style={{ width: width, flexDirection: 'row', paddingHorizontal: 15, alignItems: 'center', gap: 50, minHeight: 50 }}>
                             <View style={{ flex: 1 }}>
                                 {chapterRelation.prev ?
-                                    <>
-                                        <BoldText style={{ fontSize: 18 }}>Previous: </BoldText>
-                                        <SemiBoldText>{getChapterTitle(chapterRelation.prev)}</SemiBoldText>
-                                    </>
+                                    <Pressable onPress={() => router.replace(`/chapter/${chapterRelation.prev.id}`)}
+                                        style={styles.navigateButton}>
+                                        <AntDesign name="left" size={30} color={COLORS.white} style={{ alignSelf: 'center' }} />
+                                        <View style={{ flex: 1 }}>
+                                            <BoldText style={{ fontSize: 18 }}>Previous: </BoldText>
+                                            <SemiBoldText numberOfLines={2}>{getChapterTitle(chapterRelation.prev)}</SemiBoldText>
+                                        </View>
+                                    </Pressable>
                                     : <BoldText>No previous chapter</BoldText>}
                             </View>
                             <View style={{ flex: 1 }}>
                                 {chapterRelation.next ?
-                                    <>
-                                        <BoldText style={{ fontSize: 18 }}>Next: </BoldText>
-                                        <SemiBoldText>{getChapterTitle(chapterRelation.next)}</SemiBoldText>
-                                    </>
-                                    : <BoldText>No next chapter</BoldText>}
+                                    <Pressable onPress={() => router.replace(`/chapter/${chapterRelation.next.id}`)}
+                                        style={styles.navigateButton}>
+                                        <View style={{ flex: 1 }}>
+                                            <BoldText style={{ fontSize: 18 }}>Next: </BoldText>
+                                            <SemiBoldText numberOfLines={2}>{getChapterTitle(chapterRelation.next)}</SemiBoldText>
+                                        </View>
+                                        <AntDesign name="right" size={30} color={COLORS.white} style={{ alignSelf: 'center' }} />
+                                    </Pressable>
+                                    : <BoldText style={{ textAlign: 'center' }}>No next chapter</BoldText>}
                             </View>
                         </View>)}
                     />
                 </View>
             </GestureDetector>
-            <View style={[styles.detail, { bottom: 0, width: width, display: showDetail ? 'flex' : 'none' }]}>
-                <Text>This is detail</Text>
+            <View style={[styles.detail, { bottom: 10, width: width, display: showDetail ? 'flex' : 'none' }]}>
+                <Pressable
+                    onPress={() => router.replace(`/chapter/${chapterRelation.prev.id}`)}
+                    style={[styles.skipButton, { opacity: chapterRelation.prev ? 1 : 0.6 }]}
+                    disabled={chapterRelation.prev === null || undefined}>
+                    <Feather name="skip-back" size={20} color={COLORS.white} />
+                </Pressable>
+                <View style={styles.sliderContainer}>
+                    <NormalText>{currentIndex}</NormalText>
+                    <Slider
+                        ref={sliderRef}
+                        style={{ flex: 1, display: showDetail ? 'flex' : 'none' }}
+                        minimumValue={1}
+                        maximumValue={pages.length}
+                        onValueChange={page => handlePageChange(page)}
+                        step={1}
+                        tapToSeek={true}
+                        renderStepNumber={true}
+                    />
+                    <NormalText>{pages.length}</NormalText>
+                </View>
+                <Pressable
+                    onPress={() => router.replace(`/chapter/${chapterRelation.next.id}`)}
+                    style={[styles.skipButton, { opacity: chapterRelation.next ? 1 : 0.6 }]}
+                    disabled={chapterRelation.next === null || undefined}>
+                    <Feather name="skip-forward" size={20} color={COLORS.white} />
+                </Pressable>
             </View>
         </View>
     )
@@ -107,11 +175,37 @@ const styles = StyleSheet.create({
     detail: {
         position: 'absolute',
         height: 70,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
         zIndex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         gap: 10,
         paddingHorizontal: 15
+    },
+    sliderContainer: {
+        flex: 1,
+        height: 50,
+        flexDirection: 'row',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        borderRadius: 50,
+        paddingHorizontal: 20,
+        alignItems: 'center'
+    },
+    navigateButton: {
+        flexDirection: 'row',
+        alignItems: 'stretch',
+        justifyContent: 'space-between',
+        gap: 10,
+        flex: 1,
+    },
+    skipButton: {
+        height: 45,
+        width: 45,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        borderRadius: 50,
+    },
+    disabledButton: {
+        opacity: 80
     }
 })

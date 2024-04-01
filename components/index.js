@@ -6,5 +6,6 @@ import PopularCard from "./PopularCard"
 import Card from "./Card"
 import LatestUpdateCard from "./LatestUpdateCard"
 import ChapterImage from "./ChapterImage"
+import SearchBar from "./SearchBar"
 
-export { SectionTextHeader, PopularCard, LatestUpdateCard, Card, NormalText, BoldText, SemiBoldText, ChapterImage };
+export { SectionTextHeader, PopularCard, LatestUpdateCard, Card, NormalText, BoldText, SemiBoldText, ChapterImage, SearchBar };

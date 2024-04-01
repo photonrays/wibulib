@@ -22,9 +22,14 @@ export default function Chapter() {
     const [showDetail, setShowDetail] = useState(false)
     const { manga, mangaFeed, updateManga, updateMangaByChapterId, clearManga } = useManga();
     const [chapterRelation, setChapterRelation] = useState(null)
-    const [currentIndex, setCurrentIndex] = useState(1);
+    const [isSliderDragging, setIsSliderDragging] = useState(false);
+
+    const [page, setPage] = useState(1);
+    let currentIndex = 0;
+
     const flatlistRef = useRef(null)
     const sliderRef = useRef(null);
+
 
     const tap = Gesture.Tap()
         .maxDistance(50)
@@ -58,14 +63,18 @@ export default function Chapter() {
     }, [mangaFeed])
 
     const handlePageChange = (page) => {
-        setCurrentIndex(page)
-        flatlistRef.current.scrollToIndex({ animated: false, index: page - 1 })
+        setPage(page)
+        currentIndex = page - 1
+        flatlistRef.current.scrollToIndex({ animated: false, index: currentIndex })
     }
 
-    onViewableItemsChanged = ({ viewableItems }) => {
-        const index = viewableItems.length === 1 ? viewableItems[0].index + 1 : viewableItems[1].index + 1
-        setCurrentIndex(index)
-        sliderRef.current.setNativeProps({ value: parseInt(index) });
+    const onViewableItemsChanged = ({ viewableItems }) => {
+        currentIndex = viewableItems[0]?.index
+    }
+
+    const onMomentumScrollEnd = () => {
+        sliderRef.current.setNativeProps({ value: parseInt(currentIndex + 1) });
+        setPage(currentIndex + 1)
     }
 
     if (!chapterRelation) {
@@ -94,7 +103,10 @@ export default function Chapter() {
             <GestureDetector gesture={Gesture.Exclusive(tap)}>
                 <View style={{ flex: 1 }}>
                     <FlatList
-                        onViewableItemsChanged={e => onViewableItemsChanged(e)}
+                        viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
+                        onViewableItemsChanged={onViewableItemsChanged}
+                        onScrollBeginDrag={() => setShowDetail(false)}
+                        onMomentumScrollEnd={onMomentumScrollEnd}
                         ref={flatlistRef}
                         contentContainerStyle={{ gap: 10, marginTop: StatusBar.currentHeight, paddingBottom: 40 }}
                         data={pages}
@@ -142,7 +154,7 @@ export default function Chapter() {
                     <Feather name="skip-back" size={20} color={COLORS.white} />
                 </Pressable>
                 <View style={styles.sliderContainer}>
-                    <NormalText>{currentIndex}</NormalText>
+                    <NormalText>{page}</NormalText>
                     <Slider
                         ref={sliderRef}
                         style={{ flex: 1, display: showDetail ? 'flex' : 'none' }}

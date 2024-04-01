@@ -1,13 +1,24 @@
-import React, { useState } from 'react'
-import { View, TextInput, Pressable, Dimensions, StatusBar, StyleSheet } from 'react-native'
-import { FontAwesome6, Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../constants';
+import React, { useEffect, useRef, useState } from 'react'
+import { View, TextInput, Pressable, Dimensions, StatusBar, StyleSheet, Image, FlatList, ScrollView } from 'react-native'
+import { FontAwesome6, Ionicons, Feather, FontAwesome } from '@expo/vector-icons';
+import { COLORS, images } from '../constants';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import useSearchManga from '../hooks/useSearchManga';
+import { getSearchManga } from '../api/manga';
+import { Link } from 'expo-router';
+import { NormalText } from './NormalText';
+import { SemiBoldText } from './SemiBoldText';
+import SearchResult from './SearchResult';
 
 export default function SearchBar({ }) {
     const [searchBarOpen, setSearchBarOpen] = useState(false)
+    const [focus, setFocus] = useState(false)
     const width = Dimensions.get('window').width
     const height = Dimensions.get('window').height
+    const inputRef = useRef(null)
+    const [searchValue, setSearchValue] = useState('');
+    const [searchResult, setSearchResult] = useState([])
+
 
     const animation = useSharedValue(0)
     const animatedStyle = useAnimatedStyle(() => {
@@ -21,33 +32,94 @@ export default function SearchBar({ }) {
         }
     })
 
-    return (
-        <View style={[styles.container, { width: width }]}>
-            <Animated.View
-                style={[{
-                    backgroundColor: COLORS.gray,
-                    borderRadius: 10,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginRight: 10,
-                },
-                    animatedStyle]}>
-                <TextInput style={{ flex: 1, color: COLORS.white, fontFamily: 'Poppins_400Regular' }} placeholderTextColor={COLORS.white} placeholder='Enter a search query...' />
-            </Animated.View>
+    const handlePress = () => {
+        setSearchBarOpen(!searchBarOpen)
+        if (animation.value == 1) {
+            setFocus(false)
+            animation.value = 0
+        } else {
+            setFocus(true)
+            animation.value = 1
+        }
+    }
 
-            <Pressable style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }} onPress={() => {
-                setSearchBarOpen(!searchBarOpen)
-                if (animation.value == 1) {
-                    animation.value = 0
-                } else {
-                    animation.value = 1
-                }
-            }}>
-                {!searchBarOpen
-                    ? <FontAwesome6 name="magnifying-glass" size={24} color={COLORS.white} />
-                    : <Ionicons name="close" size={30} color={COLORS.white} />}
-            </Pressable>
-        </View>
+    useEffect(() => {
+        if (focus) {
+            setTimeout(() => {
+                inputRef.current?.blur();
+                inputRef.current?.focus();
+            }, 100);
+        } else {
+            inputRef.current?.blur()
+        }
+    }, [focus])
+
+    useEffect(() => {
+        if (searchValue.length <= 0) {
+            setSearchResult([])
+        }
+        const delayDebounceFn = setTimeout(() => {
+            if (searchValue.length > 0) {
+                getSearchManga({ title: searchValue, hasAvailableChapters: 'true', availableTranslatedLanguage: ['vi'] })
+                    .then(data => setSearchResult(data.data?.data))
+                    .catch(e => console.log(e))
+            }
+        }, 1000)
+        return () => clearTimeout(delayDebounceFn)
+    }, [searchValue])
+
+    // useEffect(() => {
+    //     console.log(searchResult)
+    // }, [searchResult])
+
+
+    return (
+        <>
+            {focus && <Pressable onPress={() => setFocus(false)} style={{ width: width, height: 5000, backgroundColor: 'rgba(0,0,0,0.7)', position: 'absolute' }}></Pressable>}
+            <View style={[styles.container, { width: width }]}>
+                <Animated.View
+                    style={[{
+                        backgroundColor: COLORS.gray,
+                        borderRadius: 10,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginRight: 10,
+                    },
+                        animatedStyle]}>
+                    <TextInput
+                        ref={inputRef}
+                        inputMode='text'
+                        style={{ flex: 1, color: COLORS.white, fontFamily: 'Poppins_400Regular' }}
+                        placeholderTextColor={COLORS.white} placeholder='Enter a search query...'
+                        onFocus={() => setFocus(true)}
+                        onChangeText={newText => setSearchValue(newText)}
+                        defaultValue={searchValue}
+                    />
+                </Animated.View>
+
+                <Pressable style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }} onPress={handlePress}>
+                    {!searchBarOpen
+                        ? <FontAwesome6 name="magnifying-glass" size={24} color={COLORS.white} />
+                        : <Ionicons name="close" size={30} color={COLORS.white} />}
+                </Pressable>
+
+                {focus && <View style={[styles.searchResult, { width: width, height: height }]}>
+                    <Link style={{ width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }} href={{ pathname: `/search`, params: { title: searchValue } }}>
+                        <NormalText>Manga</NormalText>
+                        <NormalText>Next</NormalText>
+                    </Link>
+                    {/* {searchResult && <FlatList
+                        data={searchResult}
+                        contentContainerStyle={{ height: 500 }}
+                        renderItem={(obj, index) => <SearchResult key={index} manga={obj.item} />}
+                    />} */}
+                    {searchResult && <ScrollView style={{ flex: 1, width: '100%', height: 500, backgroundColor: 'red' }}>
+
+                    </ScrollView>}
+                    {/* {searchResult?.map((manga, index) => { <SearchResult key={index} manga={manga} /> })} */}
+                </View>}
+            </View>
+        </>
     )
 }
 
@@ -58,6 +130,36 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         alignItems: 'center',
         zIndex: 2,
-
+        position: 'relative'
+    },
+    searchResult: {
+        position: 'absolute',
+        minHeight: 100,
+        backgroundColor: COLORS.black,
+        top: '110%',
+        right: -15,
+        padding: 15,
+        paddingHorizontal: 20, borderBottomLeftRadius: 10,
+        borderBottomRightRadius: 10,
+        pointerEvents: 'box-none',
+        zIndex: 100
+    },
+    imageContainer: {
+        flex: 1,
+        maxWidth: 60,
+        borderRadius: 5,
+        backgroundColor: 'red'
+    },
+    image: {
+        flex: 1,
+        maxHeight: '100%',
+        maxWidth: '100%',
+        resizeMode: 'cover',
+        borderRadius: 5
+    },
+    flexBox: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5
     }
 })

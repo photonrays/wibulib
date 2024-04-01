@@ -110,7 +110,7 @@ export default function Chapter() {
                         ref={flatlistRef}
                         contentContainerStyle={{ gap: 10, marginTop: StatusBar.currentHeight, paddingBottom: 40 }}
                         data={pages}
-                        renderItem={(page, index) => <ChapterImage uri={page.item} />}
+                        renderItem={(page, index) => <ChapterImage key={index} uri={page.item} />}
                         onScrollToIndexFailed={info => {
                             const wait = new Promise(resolve => setTimeout(resolve, 500));
                             wait.then(() => {

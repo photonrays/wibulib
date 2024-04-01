@@ -1,16 +1,15 @@
-import { View, Text, StyleSheet, FlatList, TouchableHighlight, Image, ScrollView, Animated, StatusBar, Pressable, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableHighlight, Image, ScrollView, StatusBar, Pressable, Dimensions, Animated } from 'react-native';
 import { useState, useEffect, useRef } from 'react'
 import { COLORS } from '../../constants'
 import { SectionTextHeader, PopularCard, LatestUpdateCard, Card, NormalText, BoldText, SearchBar } from '../../components';
 import { Stack, router } from 'expo-router';
-import { useHeaderHeight } from '@react-navigation/elements'
 import useFeaturedTitles from '../../hooks/useFeatureTitles';
 import { useManga } from '../../contexts/useManga';
-import { FontAwesome6 } from '@expo/vector-icons';
+import ReaAnimated, { interpolateColor, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
 
 export default function index() {
-    const [transparentValue, setTransparentValue] = useState(0)
+    // const [transparentValue, setTransparentValue] = useState(0)
     const [headerHeight, setHeaderHeight] = useState(0)
     const { data: featuredTitles, isLoading, error } = useFeaturedTitles()
     const slideRef = useRef(null)
@@ -18,27 +17,41 @@ export default function index() {
     const { latestUpdates } = useManga();
     const win = Dimensions.get('window')
 
+    const transparentValue = useSharedValue(0)
+
     const handleScroll = (event) => {
         const offset = event.nativeEvent.contentOffset.y
         if (offset < (headerHeight)) {
-            setTransparentValue(Math.min(offset / (headerHeight), 1))
+            transparentValue.value = Math.min(offset / headerHeight, 1)
         } else if (transparentValue !== 1) {
-            setTransparentValue(1)
+            transparentValue.value = 1
         }
     }
+
+    console.log("re render")
+
+    const animatedStyles = useAnimatedStyle(() => {
+        return {
+            backgroundColor: interpolateColor(
+                transparentValue.value,
+                [0, 1],
+                ['rgba(25, 26, 28, 0)', 'rgba(25, 26, 28, 1)']
+            ),
+        };
+    });
 
     return (
         <View style={{ flex: 1 }}>
             <StatusBar backgroundColor={'transparent'} />
-            <View
+            <ReaAnimated.View
                 onLayout={(event) => {
                     const { x, y, width, height } = event.nativeEvent.layout;
                     setHeaderHeight(height)
                 }}
-                style={[styles.titleContainer, { width: win.width, backgroundColor: `rgba(25, 26, 28, ${transparentValue})` }]}>
+                style={[styles.titleContainer, { width: win.width }, animatedStyles]}>
                 <BoldText style={{ fontSize: 20, }}>WIBULIB</BoldText>
                 <SearchBar />
-            </View>
+            </ReaAnimated.View>
             <ScrollView style={styles.container}
                 onScroll={handleScroll}
                 scrollEventThrottle={16}

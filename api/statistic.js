@@ -1,4 +1,3 @@
-import { GetMangasStatisticResponse } from './schema';
 import * as util from './util';
 
 export const getMangasStatistic = function (options) {

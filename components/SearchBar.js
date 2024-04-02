@@ -1,14 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { View, TextInput, Pressable, Dimensions, StatusBar, StyleSheet, Image, FlatList, ScrollView } from 'react-native'
-import { FontAwesome6, Ionicons, Feather, FontAwesome } from '@expo/vector-icons';
+import { View, TextInput, Pressable, Dimensions, StatusBar, StyleSheet, Image } from 'react-native'
+import { FontAwesome6, Ionicons, AntDesign } from '@expo/vector-icons';
 import { COLORS, images } from '../constants';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import useSearchManga from '../hooks/useSearchManga';
 import { getSearchManga } from '../api/manga';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { NormalText } from './NormalText';
 import { SemiBoldText } from './SemiBoldText';
 import SearchResult from './SearchResult';
+import { ScrollView } from 'react-native-gesture-handler';
 
 export default function SearchBar({ }) {
     const [searchBarOpen, setSearchBarOpen] = useState(false)
@@ -60,18 +61,13 @@ export default function SearchBar({ }) {
         }
         const delayDebounceFn = setTimeout(() => {
             if (searchValue.length > 0) {
-                getSearchManga({ title: searchValue, hasAvailableChapters: 'true', availableTranslatedLanguage: ['vi'] })
+                getSearchManga({ title: searchValue, hasAvailableChapters: 'true', availableTranslatedLanguage: ['vi'], includes: ['cover_art', 'author'] })
                     .then(data => setSearchResult(data.data?.data))
                     .catch(e => console.log(e))
             }
         }, 1000)
         return () => clearTimeout(delayDebounceFn)
     }, [searchValue])
-
-    // useEffect(() => {
-    //     console.log(searchResult)
-    // }, [searchResult])
-
 
     return (
         <>
@@ -104,19 +100,15 @@ export default function SearchBar({ }) {
                 </Pressable>
 
                 {focus && <View style={[styles.searchResult, { width: width, height: height }]}>
-                    <Link style={{ width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }} href={{ pathname: `/search`, params: { title: searchValue } }}>
-                        <NormalText>Manga</NormalText>
-                        <NormalText>Next</NormalText>
-                    </Link>
-                    {/* {searchResult && <FlatList
-                        data={searchResult}
-                        contentContainerStyle={{ height: 500 }}
-                        renderItem={(obj, index) => <SearchResult key={index} manga={obj.item} />}
-                    />} */}
-                    {searchResult && <ScrollView style={{ flex: 1, width: '100%', height: 500, backgroundColor: 'red' }}>
-
-                    </ScrollView>}
-                    {/* {searchResult?.map((manga, index) => { <SearchResult key={index} manga={manga} /> })} */}
+                    {searchResult.length !== 0 &&
+                        <ScrollView style={{ width: '100%' }}>
+                            <Pressable onPress={() => router.navigate({ pathname: `/search`, params: { title: searchValue } })} style={{ width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: 5 }} >
+                                <NormalText style={{ fontSize: 18 }}>Advanced search</NormalText>
+                                <AntDesign name="arrowright" size={24} color={COLORS.white} />
+                            </Pressable>
+                            {searchResult.map((manga, index) => <SearchResult key={index} manga={manga} />)}
+                        </ScrollView>
+                    }
                 </View>}
             </View>
         </>

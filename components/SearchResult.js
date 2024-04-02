@@ -2,15 +2,17 @@ import React from 'react'
 import { Image, Pressable, StyleSheet, View } from 'react-native'
 import { COLORS, images } from '../constants'
 import { SemiBoldText } from './SemiBoldText'
-import { Feather, FontAwesome } from '@expo/vector-icons';
+import { Feather, FontAwesome, Ionicons } from '@expo/vector-icons';
 import { NormalText } from './NormalText';
 import getCoverArt from '../utils/getCoverArt';
 import { getMangaTitle } from '../utils/getMangaTitle';
+import { router } from 'expo-router';
 
 
 export default function SearchResult({ manga }) {
     const coverArt = getCoverArt(manga).toString()
     const title = getMangaTitle(manga)
+    const author = manga?.relationships?.find((rela) => rela.type == 'author')
 
     return (
         <Pressable style={{
@@ -24,26 +26,20 @@ export default function SearchResult({ manga }) {
             gap: 10,
             paddingHorizontal: 10
         }}
-            onPress={() => console.log("this run")}
+            onPress={() => router.push(`/manga/${manga.id}`)}
         >
             <View style={styles.imageContainer}>
                 <Image source={{ uri: coverArt }} style={styles.image} />
             </View>
             <View style={{ flex: 1, justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <SemiBoldText numberOfLines={1}>{title}</SemiBoldText>
-                <View style={{ flexDirection: 'row', gap: 10 }}>
-                    <View style={styles.flexBox}>
-                        <Feather name="star" size={24} color={COLORS.white} />
-                        <NormalText>8.08</NormalText>
-                    </View>
-                    <View style={styles.flexBox}>
-                        <Feather name="bookmark" size={24} color={COLORS.white} />
-                        <NormalText>24</NormalText>
-                    </View>
+                <View style={styles.flexBox}>
+                    <Ionicons name="person-outline" size={12} color={COLORS.white} />
+                    <NormalText>{author.attributes.name}</NormalText>
                 </View>
-                <View style={[styles.flexBox, { backgroundColor: COLORS.gray2, borderRadius: 3, paddingHorizontal: 10 }]}>
+                <View style={[styles.flexBox, { backgroundColor: COLORS.gray, borderRadius: 5, paddingHorizontal: 10 }]}>
                     <FontAwesome name="circle" size={8} color={COLORS.white} />
-                    <NormalText>Complete</NormalText>
+                    <NormalText>{manga.attributes.status}</NormalText>
                 </View>
             </View>
         </Pressable>

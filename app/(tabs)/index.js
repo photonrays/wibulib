@@ -9,7 +9,6 @@ import ReaAnimated, { interpolateColor, useAnimatedStyle, useSharedValue } from 
 
 
 export default function index() {
-    // const [transparentValue, setTransparentValue] = useState(0)
     const [headerHeight, setHeaderHeight] = useState(0)
     const { data: featuredTitles, isLoading, error } = useFeaturedTitles()
     const slideRef = useRef(null)
@@ -42,7 +41,6 @@ export default function index() {
 
     return (
         <View style={{ flex: 1 }}>
-            <StatusBar backgroundColor={'transparent'} />
             <ReaAnimated.View
                 onLayout={(event) => {
                     const { x, y, width, height } = event.nativeEvent.layout;
@@ -56,6 +54,7 @@ export default function index() {
                 onScroll={handleScroll}
                 scrollEventThrottle={16}
             >
+                <StatusBar backgroundColor={'transparent'} />
                 <Stack.Screen options={{
                     headerShown: false,
                 }} />

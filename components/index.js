@@ -8,5 +8,18 @@ import LatestUpdateCard from "./LatestUpdateCard"
 import ChapterImage from "./ChapterImage"
 import SearchBar from "./SearchBar"
 import SearchResult from "./SearchResult"
+import SearchFilter from "./SearchFilter";
 
-export { SectionTextHeader, PopularCard, LatestUpdateCard, Card, NormalText, BoldText, SemiBoldText, ChapterImage, SearchBar, SearchResult };
+export {
+    SectionTextHeader,
+    NormalText,
+    BoldText,
+    SemiBoldText,
+    PopularCard,
+    LatestUpdateCard,
+    Card,
+    ChapterImage,
+    SearchBar,
+    SearchResult,
+    SearchFilter
+};

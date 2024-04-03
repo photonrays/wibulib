@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, StatusBar, ScrollView, Dimensions, TextInput, Pressable, FlatList } from 'react-native';
 import { COLORS } from '../../constants';
-import { BoldText, NormalText, SearchResult } from '../../components';
+import { BoldText, NormalText, SearchFilter, SearchResult } from '../../components';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { FontAwesome6, Ionicons, Octicons, Feather, AntDesign } from '@expo/vector-icons';
@@ -13,6 +13,7 @@ export default function Search() {
     const [searchValue, setSearchValue] = useState(title || '')
     const [searchResult, setSearchResult] = useState([])
     const [options, setOptions] = useState({ hasAvailableChapters: 'true', availableTranslatedLanguage: ['vi'], includes: ['cover_art', 'author'] })
+    const [modalVisible, setModalVisible] = useState(false)
 
     useEffect(() => {
         if (searchValue.length <= 0) {
@@ -28,13 +29,20 @@ export default function Search() {
         return () => clearTimeout(delayDebounceFn)
     }, [searchValue])
 
+    useEffect(() => {
+        console.log(options)
+    }, [options])
+
     return (
         <View style={styles.container}>
             <Stack.Screen options={{
                 headerShown: false,
             }} />
             <StatusBar backgroundColor={'transparent'} />
-            <View style={{ flex: 1, gap: 15 }}>
+
+            <SearchFilter isVisible={modalVisible} setOptions={setOptions} setIsVisible={setModalVisible} />
+
+            <View style={{ flex: 1, gap: 15, paddingHorizontal: 15 }}>
                 <View style={[styles.titleContainer, { width: win.width }]}>
                     <BoldText style={{ fontSize: 20, }}>ADVANCED SEARCH</BoldText>
                 </View>
@@ -72,7 +80,7 @@ export default function Search() {
                 </View>
 
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Pressable style={[styles.buttonContainer, { backgroundColor: COLORS.gray2 }]}>
+                    <Pressable style={[styles.buttonContainer, { backgroundColor: COLORS.gray2 }]} onPress={() => setModalVisible(true)}>
                         <Feather name="filter" size={26} color={COLORS.white} />
                     </Pressable>
 
@@ -105,7 +113,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: COLORS.black,
         position: 'relative',
-        paddingHorizontal: 15
     },
     titleContainer: {
         paddingTop: StatusBar.currentHeight + 20,

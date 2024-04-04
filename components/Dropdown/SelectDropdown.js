@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useCallback } from 'react';
-import { View, TouchableOpacity, FlatList } from 'react-native';
+import { View, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import { isExist } from './helpers/isExist';
 import Input from './components/Input';
 import DropdownOverlay from './components/DropdownOverlay';
@@ -42,6 +42,7 @@ const SelectDropdown = (
     onChangeSearchInputText /* function callback when the search input text changes, this will automatically disable the dropdown's interna search to be implemented manually outside the component  */,
     multipleSelect = false /*Select Multiple values from the Drop down List */,
     searchKey /*search key if the data is object default searches all */,
+    customContent
   },
   ref,
 ) => {
@@ -172,7 +173,7 @@ const SelectDropdown = (
         <DropdownModal statusBarTranslucent={statusBarTranslucent} visible={isVisible} onRequestClose={onRequestClose}>
           <DropdownOverlay onPress={closeDropdown} backgroundColor={dropdownOverlayColor} />
           <DropdownWindow layoutStyle={dropdownWindowStyle}>
-            <FlatList
+            {!customContent ? <FlatList
               testID={testID}
               data={dataArr}
               keyExtractor={(item, index) => index.toString()}
@@ -184,7 +185,12 @@ const SelectDropdown = (
               onEndReached={() => onScrollEndReached && onScrollEndReached()}
               onEndReachedThreshold={0.5}
               showsVerticalScrollIndicator={showsVerticalScrollIndicator}
-            />
+            /> :
+              <ScrollView
+                testID={testID}
+              >
+                {customContent}
+              </ScrollView>}
           </DropdownWindow>
         </DropdownModal>
       )

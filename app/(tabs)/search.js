@@ -15,22 +15,19 @@ export default function Search() {
     const [options, setOptions] = useState({ hasAvailableChapters: 'true', availableTranslatedLanguage: ['vi'], includes: ['cover_art', 'author'] })
     const [modalVisible, setModalVisible] = useState(false)
 
-    useEffect(() => {
-        if (searchValue.length <= 0) {
-            setSearchResult([])
-        }
-        const delayDebounceFn = setTimeout(() => {
-            if (searchValue.length > 0) {
-                getSearchManga({ ...options, title: searchValue })
-                    .then(data => setSearchResult(data.data?.data))
-                    .catch(e => console.log(e))
+    const handleSubmit = async () => {
+        try {
+            const { data } = await getSearchManga({ ...options, title: searchValue })
+            if (data && data.data) {
+                setSearchResult(data.data)
             }
-        }, 1000)
-        return () => clearTimeout(delayDebounceFn)
-    }, [searchValue])
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     useEffect(() => {
-        console.log(options)
+        if (options) console.log(options)
     }, [options])
 
     return (
@@ -40,7 +37,7 @@ export default function Search() {
             }} />
             <StatusBar backgroundColor={'transparent'} />
 
-            <SearchFilter isVisible={modalVisible} setOptions={setOptions} setIsVisible={setModalVisible} />
+            <SearchFilter isVisible={modalVisible} options={options} setOptions={setOptions} setIsVisible={setModalVisible} />
 
             <View style={{ flex: 1, gap: 15, paddingHorizontal: 15 }}>
                 <View style={[styles.titleContainer, { width: win.width }]}>
@@ -65,6 +62,7 @@ export default function Search() {
                         // onFocus={() => setFocus(true)}
                         onChangeText={newText => setSearchValue(newText)}
                         defaultValue={searchValue}
+                        onSubmitEditing={handleSubmit}
                     />
                     {searchValue !== '' && <Pressable onPress={() => setSearchValue('')}
                         style={{
@@ -80,18 +78,18 @@ export default function Search() {
                 </View>
 
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Pressable style={[styles.buttonContainer, { backgroundColor: COLORS.gray2 }]} onPress={() => setModalVisible(true)}>
+                    <Pressable style={({ pressed }) => [styles.buttonContainer, { backgroundColor: pressed ? COLORS.gray2 : COLORS.gray }]} onPress={() => setModalVisible(true)}>
                         <Feather name="filter" size={26} color={COLORS.white} />
                     </Pressable>
 
                     <View style={{ flexDirection: 'row', backgroundColor: COLORS.gray, borderRadius: 5 }}>
-                        <Pressable style={[styles.buttonContainer, { backgroundColor: COLORS.gray }]}>
+                        <Pressable style={({ pressed }) => [styles.buttonContainer, { backgroundColor: pressed ? COLORS.gray2 : COLORS.gray }]}>
                             <Feather name="list" size={30} color={COLORS.white} />
                         </Pressable>
-                        <Pressable style={[styles.buttonContainer, { backgroundColor: COLORS.gray }]}>
+                        <Pressable style={({ pressed }) => [styles.buttonContainer, { backgroundColor: pressed ? COLORS.gray2 : COLORS.gray }]}>
                             <Octicons name="rows" size={26} color={COLORS.white} />
                         </Pressable>
-                        <Pressable style={[styles.buttonContainer, { backgroundColor: COLORS.gray2 }]}>
+                        <Pressable style={({ pressed }) => [styles.buttonContainer, { backgroundColor: pressed ? COLORS.gray2 : COLORS.gray }]}>
                             <Feather name="grid" size={30} color={COLORS.white} />
                         </Pressable>
                     </View>

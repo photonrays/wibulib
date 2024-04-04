@@ -1,13 +1,15 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Dimensions, Pressable, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native';
 import Modal from "react-native-modal";
 import { NormalText } from './NormalText';
 import { COLORS } from '../constants';
 import { FontAwesome6, Ionicons, AntDesign } from '@expo/vector-icons';
 import { MangaContentRating, MangaPublicationDemographic, MangaPublicationStatus, Order } from '../api/static';
-import { CustomDropdown, SelectDropdown } from './Dropdown'
+import { SelectDropdown } from './Dropdown'
 import { BoldText } from './BoldText';
 import { SemiBoldText } from './SemiBoldText';
+import { getMangaTag } from '../api/manga';
+import CustomDropdown from './CustomDropdown';
 
 const sortByData = [
     { title: 'Mới cập nhật', value: { updatedAt: Order.DESC } },
@@ -36,9 +38,63 @@ const publicationStatusData = [
     { title: 'Cancelled', value: MangaPublicationStatus.CANCELLED },
     { title: 'Hiatus', value: MangaPublicationStatus.HIATUS }]
 
-export default function SearchFilter({ isVisible, setIsVisible, setOptions }) {
+export default function SearchFilter({ isVisible, setIsVisible, options, setOptions }) {
     const win = Dimensions.get('window')
+    const [tags, setTags] = useState([])
+    // const [selectedTags, setSelectedTags] = useState(options.includedTags || [])
 
+    useEffect(() => {
+        getMangaTag()
+            .then((data) => {
+                data.data.data.sort(function (a, b) {
+                    if (a.attributes.name.en < b.attributes.name.en) {
+                        return -1;
+                    }
+                    if (a.attributes.name.en > b.attributes.name.en) {
+                        return 1;
+                    }
+                    return 0;
+                });
+                setTags(data.data.data)
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    }, [])
+
+    const removeKey = (key) => {
+        setValue(prev => {
+            const { [key]: _, ...rest } = prev;
+            return rest;
+        });
+    }
+
+    useEffect(() => {
+        if (tags) console.log(tags)
+    }, [tags])
+
+    const TagItem = ({ obj }) => {
+        return (
+            <Pressable onPress={() => {
+                if (options.includedTags && options.includedTags.includes(obj.id)) {
+                    if (options.includedTags.length === 1) {
+                        setOptions(prev => {
+                            const { includedTags, ...rest } = prev;
+                            return rest;
+                        });
+                    } else {
+                        setOptions(prev => ({ ...prev, includedTags: prev.includedTags.filter(o => o !== obj.id) }))
+                    }
+                } else if (options.includedTags) {
+                    setOptions(prev => ({ ...prev, includedTags: [...prev.includedTags, obj.id] }))
+                } else {
+                    setOptions(prev => ({ ...prev, includedTags: [obj.id] }))
+                }
+            }} style={{ ...styles.tag, backgroundColor: options.includedTags?.includes(obj.id) ? COLORS.primary : COLORS.gray }}>
+                <NormalText>{obj.attributes.name.en}</NormalText>
+            </Pressable>
+        )
+    }
 
     return (
         <Modal
@@ -57,216 +113,75 @@ export default function SearchFilter({ isVisible, setIsVisible, setOptions }) {
                 <View style={{ gap: 10 }}>
                     <View>
                         <NormalText>Sort by</NormalText>
-                        <SelectDropdown
-                            data={sortByData}
-                            onSelect={(selectedItem, index) => {
-                                console.log(selectedItem)
-                            }}
-                            renderButton={(selectedItem, isOpened) => {
-                                let titlesString
-                                if (Array.isArray(selectedItem)) {
-                                    const titles = selectedItem.map((item) => item.item.title)
-                                    titlesString = titles.length == 0 ? "None" : titles.join(", ")
-                                } else {
-                                    titlesString = (selectedItem && selectedItem.title) || 'None'
-                                }
-                                return (
-                                    <View style={[styles.dropdownButtonStyle]}>
-                                        <NormalText>{titlesString}</NormalText>
-                                        <AntDesign name={isOpened ? "caretup" : "caretdown"} size={18} color={COLORS.white} />
-                                    </View>
-                                );
-                            }}
-                            renderItem={(item, index, isSelected) => {
-                                return (
-                                    <View key={index} style={{ ...styles.dropdownItemStyle }}>
-                                        <NormalText style={{ ...(isSelected && { color: COLORS.primary }) }}>{item.title}</NormalText>
-                                    </View>
-                                );
-                            }}
-                            showsVerticalScrollIndicator={false}
-                            dropdownStyle={styles.dropdownMenuStyle}
-                        />
+                        <CustomDropdown data={sortByData} setValue={setOptions} value={options} queryKey={'order'} />
                     </View>
-
                     <View>
                         <NormalText>Tags</NormalText>
-                        <CustomDropdown
+                        <SelectDropdown
                             multipleSelect={true}
-                            renderButton={(selectedItem, isOpened) => {
-                                let titlesString
-                                if (Array.isArray(selectedItem)) {
-                                    const titles = selectedItem.map((item) => item.item.title)
-                                    titlesString = titles.length == 0 ? "None" : titles.join(", ")
-                                } else {
-                                    titlesString = (selectedItem && selectedItem.title) || 'None'
-                                }
+                            renderButton={(isOpened) => {
+                                let tagList = options.includedTags ? tags.filter(t => options.includedTags.includes(t.id)).map(t => t.attributes.name.en) : []
                                 return (
                                     <View style={[styles.dropdownButtonStyle]}>
-                                        <NormalText>{titlesString}</NormalText>
+                                        <NormalText numberOfLines={1}>{tagList.length !== 0 ? tagList.join(", ") : 'None'}</NormalText>
                                         <AntDesign name={isOpened ? "caretup" : "caretdown"} size={18} color={COLORS.white} />
                                     </View>
                                 );
                             }}
                             showsVerticalScrollIndicator={false}
-                            dropdownStyle={{ ...styles.dropdownMenuStyle, height: 400 }}
+                            dropdownStyle={{ ...styles.dropdownMenuStyle, height: 600, maxHeight: 600 }}
                             customContent={
-                                <View style={{ width: '100%', paddingHorizontal: 12, paddingVertical: 8, gap: 10 }}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <SemiBoldText style={{ fontSize: 16, marginRight: 10 }}>Format</SemiBoldText>
-                                        <View style={{ flex: 1, height: 1, backgroundColor: COLORS.white }} />
-                                    </View>
-                                    <View style={{ flex: 1, flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
-                                        <View style={styles.tag}>
-                                            <NormalText>4-Koma</NormalText>
+                                <View style={{ width: '100%', paddingHorizontal: 12, paddingVertical: 8, gap: 20 }}>
+                                    <View>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                                            <SemiBoldText style={{ fontSize: 16, marginRight: 10 }}>Format</SemiBoldText>
+                                            <View style={{ flex: 1, height: 1, backgroundColor: COLORS.white }} />
                                         </View>
-                                        <View style={styles.tag}>
-                                            <NormalText>4-Koma</NormalText>
-                                        </View>
-                                        <View style={styles.tag}>
-                                            <NormalText>4-Koma</NormalText>
-                                        </View>
-                                        <View style={styles.tag}>
-                                            <NormalText>4-Koma</NormalText>
-                                        </View>
-                                        <View style={styles.tag}>
-                                            <NormalText>4-Koma</NormalText>
-                                        </View>
-                                        <View style={styles.tag}>
-                                            <NormalText>4-Koma</NormalText>
+                                        <View style={{ flex: 1, flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+                                            {tags?.filter((obj) => obj.attributes.group === 'format').map((obj, index) => (<TagItem key={index} obj={obj} />))}
                                         </View>
                                     </View>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <SemiBoldText style={{ fontSize: 16, marginRight: 10 }}>Format</SemiBoldText>
-                                        <View style={{ flex: 1, height: 1, backgroundColor: COLORS.white }} />
+                                    <View>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                                            <SemiBoldText style={{ fontSize: 16, marginRight: 10 }}>Genre</SemiBoldText>
+                                            <View style={{ flex: 1, height: 1, backgroundColor: COLORS.white }} />
+                                        </View>
+                                        <View style={{ flex: 1, flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+                                            {tags?.filter((obj) => obj.attributes.group === 'genre').map((obj, index) => (<TagItem key={index} obj={obj} />))}
+                                        </View>
                                     </View>
-                                    <View style={{ flex: 1, flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
-                                        <View style={styles.tag}>
-                                            <NormalText>4-Koma</NormalText>
+                                    <View>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                                            <SemiBoldText style={{ fontSize: 16, marginRight: 10 }}>Theme</SemiBoldText>
+                                            <View style={{ flex: 1, height: 1, backgroundColor: COLORS.white }} />
                                         </View>
-                                        <View style={styles.tag}>
-                                            <NormalText>4-Koma</NormalText>
+                                        <View style={{ flex: 1, flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+                                            {tags?.filter((obj) => obj.attributes.group === 'theme').map((obj, index) => (<TagItem key={index} obj={obj} />))}
                                         </View>
-                                        <View style={styles.tag}>
-                                            <NormalText>4-Koma</NormalText>
+                                    </View>
+                                    <View>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                                            <SemiBoldText style={{ fontSize: 16, marginRight: 10 }}>Content</SemiBoldText>
+                                            <View style={{ flex: 1, height: 1, backgroundColor: COLORS.white }} />
                                         </View>
-                                        <View style={styles.tag}>
-                                            <NormalText>4-Koma</NormalText>
-                                        </View>
-                                        <View style={styles.tag}>
-                                            <NormalText>4-Koma</NormalText>
-                                        </View>
-                                        <View style={styles.tag}>
-                                            <NormalText>4-Koma</NormalText>
+                                        <View style={{ flex: 1, flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+                                            {tags?.filter((obj) => obj.attributes.group === 'content').map((obj, index) => (<TagItem key={index} obj={obj} />))}
                                         </View>
                                     </View>
                                 </View>}
                         />
                     </View>
-
                     <View>
                         <NormalText>Content rating</NormalText>
-                        <SelectDropdown
-                            multipleSelect={true}
-                            data={contentRatingData}
-                            onSelect={(selectedItem, index) => {
-                                console.log(selectedItem)
-                            }}
-                            renderButton={(selectedItem, isOpened) => {
-                                let titlesString
-                                if (Array.isArray(selectedItem)) {
-                                    const titles = selectedItem.map((item) => item.item.title)
-                                    titlesString = titles.length == 0 ? "None" : titles.join(", ")
-                                } else {
-                                    titlesString = (selectedItem && selectedItem.title) || 'None'
-                                }
-                                return (
-                                    <View style={[styles.dropdownButtonStyle]}>
-                                        <NormalText>{titlesString}</NormalText>
-                                        <AntDesign name={isOpened ? "caretup" : "caretdown"} size={18} color={COLORS.white} />
-                                    </View>
-                                );
-                            }}
-                            renderItem={(item, index, isSelected) => {
-                                return (
-                                    <View key={index} style={{ ...styles.dropdownItemStyle }}>
-                                        <NormalText style={{ ...(isSelected && { color: COLORS.primary }) }}>{item.title}</NormalText>
-                                    </View>
-                                );
-                            }}
-                            showsVerticalScrollIndicator={false}
-                            dropdownStyle={styles.dropdownMenuStyle}
-                        />
+                        <CustomDropdown data={contentRatingData} multiSelect={true} setValue={setOptions} value={options} queryKey='contentRating' />
                     </View>
-
                     <View>
                         <NormalText>Magazine Demographic</NormalText>
-                        <SelectDropdown
-                            multipleSelect={true}
-                            data={demographicData}
-                            onSelect={(selectedItem, index) => {
-                                console.log(selectedItem)
-                            }}
-                            renderButton={(selectedItem, isOpened) => {
-                                let titlesString
-                                if (Array.isArray(selectedItem)) {
-                                    const titles = selectedItem.map((item) => item.item.title)
-                                    titlesString = titles.length == 0 ? "None" : titles.join(", ")
-                                } else {
-                                    titlesString = (selectedItem && selectedItem.title) || 'None'
-                                }
-                                return (
-                                    <View style={[styles.dropdownButtonStyle]}>
-                                        <NormalText>{titlesString}</NormalText>
-                                        <AntDesign name={isOpened ? "caretup" : "caretdown"} size={18} color={COLORS.white} />
-                                    </View>
-                                );
-                            }}
-                            renderItem={(item, index, isSelected) => {
-                                return (
-                                    <View key={index} style={{ ...styles.dropdownItemStyle }}>
-                                        <NormalText style={{ ...(isSelected && { color: COLORS.primary }) }}>{item.title}</NormalText>
-                                    </View>
-                                );
-                            }}
-                            showsVerticalScrollIndicator={false}
-                            dropdownStyle={styles.dropdownMenuStyle}
-                        />
+                        <CustomDropdown data={demographicData} multiSelect={true} setValue={setOptions} value={options} queryKey='publicationDemographic' />
                     </View>
-
                     <View>
                         <NormalText>Publication Status</NormalText>
-                        <SelectDropdown
-                            multipleSelect={true}
-                            data={publicationStatusData}
-                            onSelect={(selectedItem, index) => {
-                                console.log(selectedItem)
-                            }}
-                            renderButton={(selectedItem, isOpened) => {
-                                let titlesString
-                                if (Array.isArray(selectedItem)) {
-                                    const titles = selectedItem.map((item) => item.item.title)
-                                    titlesString = titles.length == 0 ? "None" : titles.join(", ")
-                                } else {
-                                    titlesString = (selectedItem && selectedItem.title) || 'None'
-                                }
-                                return (
-                                    <View style={[styles.dropdownButtonStyle]}>
-                                        <NormalText>{titlesString}</NormalText>
-                                        <AntDesign name={isOpened ? "caretup" : "caretdown"} size={18} color={COLORS.white} />
-                                    </View>
-                                );
-                            }}
-                            renderItem={(item, index, isSelected) => {
-                                return (
-                                    <View key={index} style={{ ...styles.dropdownItemStyle }}>
-                                        <NormalText style={{ ...(isSelected && { color: COLORS.primary }) }}>{item.title}</NormalText>
-                                    </View>
-                                );
-                            }}
-                            showsVerticalScrollIndicator={false}
-                            dropdownStyle={styles.dropdownMenuStyle}
-                        />
+                        <CustomDropdown data={publicationStatusData} multiSelect={true} setValue={setOptions} value={options} queryKey='status' />
                     </View>
                 </View>
             </View>

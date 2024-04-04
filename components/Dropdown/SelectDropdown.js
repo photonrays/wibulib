@@ -42,7 +42,9 @@ const SelectDropdown = (
     onChangeSearchInputText /* function callback when the search input text changes, this will automatically disable the dropdown's interna search to be implemented manually outside the component  */,
     multipleSelect = false /*Select Multiple values from the Drop down List */,
     searchKey /*search key if the data is object default searches all */,
-    customContent
+    customSelect = false /* boolean */,
+    onCustomClose /* function will run when user close dropdown */,
+    customContent /* function returns React component for content of the dropdown */,
   },
   ref,
 ) => {
@@ -54,12 +56,13 @@ const SelectDropdown = (
     selectedItem,
     selectedIndex,
     selectItem,
+    customSelectItem,
     reset,
     searchTxt,
     setSearchTxt,
     selectAll,
     toggleSeletAll,
-  } = useSelectDropdown(data, defaultValueByIndex, defaultValue, disabledInternalSearch, multipleSelect, searchKey);
+  } = useSelectDropdown(data, defaultValueByIndex, defaultValue, disabledInternalSearch, multipleSelect, searchKey, customSelect);
   const {
     isVisible, //
     setIsVisible,
@@ -91,6 +94,13 @@ const SelectDropdown = (
     });
   };
   const closeDropdown = () => {
+    if (customSelect) {
+      onCustomClose &&
+        onCustomClose(
+          selectedItem.map(d => d.item),
+        )
+    }
+
     if (multipleSelect) {
       onSelect &&
         onSelect(
@@ -119,6 +129,10 @@ const SelectDropdown = (
   };
 
   const onSelectItem = (item, index) => {
+    if (customContent) {
+      customSelectItem(item)
+      return;
+    }
     if (multipleSelect) {
       selectItem(index);
       toggleSeletAll(false);
@@ -189,7 +203,7 @@ const SelectDropdown = (
               <ScrollView
                 testID={testID}
               >
-                {customContent}
+                {customContent(onSelectItem, selectedItem)}
               </ScrollView>}
           </DropdownWindow>
         </DropdownModal>

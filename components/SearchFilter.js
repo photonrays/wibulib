@@ -38,59 +38,15 @@ const publicationStatusData = [
     { title: 'Cancelled', value: MangaPublicationStatus.CANCELLED },
     { title: 'Hiatus', value: MangaPublicationStatus.HIATUS }]
 
-export default function SearchFilter({ isVisible, setIsVisible, options, setOptions }) {
+export default function SearchFilter({ isVisible, setIsVisible, options, setOptions, tags, selectedTags }) {
     const win = Dimensions.get('window')
-    const [tags, setTags] = useState([])
-    // const [selectedTags, setSelectedTags] = useState(options.includedTags || [])
 
-    useEffect(() => {
-        getMangaTag()
-            .then((data) => {
-                data.data.data.sort(function (a, b) {
-                    if (a.attributes.name.en < b.attributes.name.en) {
-                        return -1;
-                    }
-                    if (a.attributes.name.en > b.attributes.name.en) {
-                        return 1;
-                    }
-                    return 0;
-                });
-                setTags(data.data.data)
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, [])
-
-    const removeKey = (key) => {
-        setValue(prev => {
-            const { [key]: _, ...rest } = prev;
-            return rest;
-        });
-    }
-
-    useEffect(() => {
-        if (tags) console.log(tags)
-    }, [tags])
-
-    const TagItem = ({ obj }) => {
+    const TagItem = ({ obj, onSelectItem, selectedItem }) => {
+        const isSelected = selectedItem.filter(o => o.item == obj).length > 0;
         return (
             <Pressable onPress={() => {
-                if (options.includedTags && options.includedTags.includes(obj.id)) {
-                    if (options.includedTags.length === 1) {
-                        setOptions(prev => {
-                            const { includedTags, ...rest } = prev;
-                            return rest;
-                        });
-                    } else {
-                        setOptions(prev => ({ ...prev, includedTags: prev.includedTags.filter(o => o !== obj.id) }))
-                    }
-                } else if (options.includedTags) {
-                    setOptions(prev => ({ ...prev, includedTags: [...prev.includedTags, obj.id] }))
-                } else {
-                    setOptions(prev => ({ ...prev, includedTags: [obj.id] }))
-                }
-            }} style={{ ...styles.tag, backgroundColor: options.includedTags?.includes(obj.id) ? COLORS.primary : COLORS.gray }}>
+                onSelectItem(obj)
+            }} style={{ ...styles.tag, ...(isSelected && { backgroundColor: COLORS.primary }) }}>
                 <NormalText>{obj.attributes.name.en}</NormalText>
             </Pressable>
         )
@@ -116,11 +72,26 @@ export default function SearchFilter({ isVisible, setIsVisible, options, setOpti
                         <CustomDropdown data={sortByData} setValue={setOptions} value={options} queryKey={'order'} />
                     </View>
                     <View>
-                        <NormalText>Tags</NormalText>
+                        <View style={{ flexDirection: 'row', gap: 10 }}>
+                            <NormalText>Tags</NormalText>
+                            {selectedTags && <NormalText style={{ color: COLORS.primary }}>{selectedTags.length} selected</NormalText>}
+                        </View>
                         <SelectDropdown
+                            customSelect={true}
                             multipleSelect={true}
-                            renderButton={(isOpened) => {
-                                let tagList = options.includedTags ? tags.filter(t => options.includedTags.includes(t.id)).map(t => t.attributes.name.en) : []
+                            onCustomClose={(selectedItems) => {
+                                if (selectedItems.length !== 0) {
+                                    setOptions(prev => ({ ...prev, includedTags: selectedItems.map(obj => obj.id) }))
+                                } else {
+                                    setOptions(prev => {
+                                        const { includedTags, ...rest } = prev;
+                                        return rest;
+                                    });
+                                }
+                            }}
+                            defaultValue={selectedTags}
+                            renderButton={(selectedItem, isOpened) => {
+                                let tagList = selectedItem.map(obj => obj.item.attributes.name.en)
                                 return (
                                     <View style={[styles.dropdownButtonStyle]}>
                                         <NormalText numberOfLines={1}>{tagList.length !== 0 ? tagList.join(", ") : 'None'}</NormalText>
@@ -129,46 +100,48 @@ export default function SearchFilter({ isVisible, setIsVisible, options, setOpti
                                 );
                             }}
                             showsVerticalScrollIndicator={false}
-                            dropdownStyle={{ ...styles.dropdownMenuStyle, height: 600, maxHeight: 600 }}
-                            customContent={
-                                <View style={{ width: '100%', paddingHorizontal: 12, paddingVertical: 8, gap: 20 }}>
-                                    <View>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-                                            <SemiBoldText style={{ fontSize: 16, marginRight: 10 }}>Format</SemiBoldText>
-                                            <View style={{ flex: 1, height: 1, backgroundColor: COLORS.white }} />
+                            dropdownStyle={{ ...styles.dropdownMenuStyle, height: 500, maxHeight: 500 }}
+                            customContent={(onSelectItem, selectedItem) => {
+                                return (
+                                    <View style={{ width: '100%', paddingHorizontal: 12, paddingVertical: 8, gap: 20 }}>
+                                        <View>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                                                <SemiBoldText style={{ fontSize: 16, marginRight: 10 }}>Format</SemiBoldText>
+                                                <View style={{ flex: 1, height: 1, backgroundColor: COLORS.white }} />
+                                            </View>
+                                            <View style={{ flex: 1, flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+                                                {tags?.filter((obj) => obj.attributes.group === 'format').map((obj, index) => (<TagItem key={index} obj={obj} onSelectItem={onSelectItem} selectedItem={selectedItem} />))}
+                                            </View>
                                         </View>
-                                        <View style={{ flex: 1, flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
-                                            {tags?.filter((obj) => obj.attributes.group === 'format').map((obj, index) => (<TagItem key={index} obj={obj} />))}
+                                        <View>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                                                <SemiBoldText style={{ fontSize: 16, marginRight: 10 }}>Genre</SemiBoldText>
+                                                <View style={{ flex: 1, height: 1, backgroundColor: COLORS.white }} />
+                                            </View>
+                                            <View style={{ flex: 1, flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+                                                {tags?.filter((obj) => obj.attributes.group === 'genre').map((obj, index) => (<TagItem key={index} obj={obj} onSelectItem={onSelectItem} selectedItem={selectedItem} />))}
+                                            </View>
                                         </View>
-                                    </View>
-                                    <View>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-                                            <SemiBoldText style={{ fontSize: 16, marginRight: 10 }}>Genre</SemiBoldText>
-                                            <View style={{ flex: 1, height: 1, backgroundColor: COLORS.white }} />
+                                        <View>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                                                <SemiBoldText style={{ fontSize: 16, marginRight: 10 }}>Theme</SemiBoldText>
+                                                <View style={{ flex: 1, height: 1, backgroundColor: COLORS.white }} />
+                                            </View>
+                                            <View style={{ flex: 1, flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+                                                {tags?.filter((obj) => obj.attributes.group === 'theme').map((obj, index) => (<TagItem key={index} obj={obj} onSelectItem={onSelectItem} selectedItem={selectedItem} />))}
+                                            </View>
                                         </View>
-                                        <View style={{ flex: 1, flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
-                                            {tags?.filter((obj) => obj.attributes.group === 'genre').map((obj, index) => (<TagItem key={index} obj={obj} />))}
+                                        <View>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                                                <SemiBoldText style={{ fontSize: 16, marginRight: 10 }}>Content</SemiBoldText>
+                                                <View style={{ flex: 1, height: 1, backgroundColor: COLORS.white }} />
+                                            </View>
+                                            <View style={{ flex: 1, flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+                                                {tags?.filter((obj) => obj.attributes.group === 'content').map((obj, index) => (<TagItem key={index} obj={obj} onSelectItem={onSelectItem} selectedItem={selectedItem} />))}
+                                            </View>
                                         </View>
-                                    </View>
-                                    <View>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-                                            <SemiBoldText style={{ fontSize: 16, marginRight: 10 }}>Theme</SemiBoldText>
-                                            <View style={{ flex: 1, height: 1, backgroundColor: COLORS.white }} />
-                                        </View>
-                                        <View style={{ flex: 1, flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
-                                            {tags?.filter((obj) => obj.attributes.group === 'theme').map((obj, index) => (<TagItem key={index} obj={obj} />))}
-                                        </View>
-                                    </View>
-                                    <View>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-                                            <SemiBoldText style={{ fontSize: 16, marginRight: 10 }}>Content</SemiBoldText>
-                                            <View style={{ flex: 1, height: 1, backgroundColor: COLORS.white }} />
-                                        </View>
-                                        <View style={{ flex: 1, flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
-                                            {tags?.filter((obj) => obj.attributes.group === 'content').map((obj, index) => (<TagItem key={index} obj={obj} />))}
-                                        </View>
-                                    </View>
-                                </View>}
+                                    </View>)
+                            }}
                         />
                     </View>
                     <View>
@@ -199,7 +172,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 12,
         overflow: 'hidden',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        gap: 10
     },
     dropdownMenuStyle: {
         backgroundColor: COLORS.gray2,

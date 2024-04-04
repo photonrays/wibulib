@@ -4,7 +4,7 @@ import { BoldText, NormalText, SearchFilter, SearchResult } from '../../componen
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { FontAwesome6, Ionicons, Octicons, Feather, AntDesign } from '@expo/vector-icons';
-import { getSearchManga } from '../../api/manga';
+import { getMangaTag, getSearchManga } from '../../api/manga';
 
 
 export default function Search() {
@@ -14,6 +14,27 @@ export default function Search() {
     const [searchResult, setSearchResult] = useState([])
     const [options, setOptions] = useState({ hasAvailableChapters: 'true', availableTranslatedLanguage: ['vi'], includes: ['cover_art', 'author'] })
     const [modalVisible, setModalVisible] = useState(false)
+    const [tags, setTags] = useState([])
+    const [selectedTags, setSelectedTags] = useState(null)
+
+    useEffect(() => {
+        getMangaTag()
+            .then((data) => {
+                data.data.data.sort(function (a, b) {
+                    if (a.attributes.name.en < b.attributes.name.en) {
+                        return -1;
+                    }
+                    if (a.attributes.name.en > b.attributes.name.en) {
+                        return 1;
+                    }
+                    return 0;
+                });
+                setTags(data.data.data)
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    }, [])
 
     const handleSubmit = async () => {
         try {
@@ -27,7 +48,11 @@ export default function Search() {
     }
 
     useEffect(() => {
-        if (options) console.log(options)
+        if (options?.includedTags) {
+            setSelectedTags(tags.filter((t) => options.includedTags.includes(t.id)))
+        } else {
+            setSelectedTags(null)
+        }
     }, [options])
 
     return (
@@ -37,7 +62,7 @@ export default function Search() {
             }} />
             <StatusBar backgroundColor={'transparent'} />
 
-            <SearchFilter isVisible={modalVisible} options={options} setOptions={setOptions} setIsVisible={setModalVisible} />
+            <SearchFilter isVisible={modalVisible} options={options} setOptions={setOptions} setIsVisible={setModalVisible} tags={tags} selectedTags={selectedTags} />
 
             <View style={{ flex: 1, gap: 15, paddingHorizontal: 15 }}>
                 <View style={[styles.titleContainer, { width: win.width }]}>

@@ -10,6 +10,7 @@ export const useSelectDropdown = (
   disabledInternalSearch,
   multipleSelect,
   searchKey,
+  customSelect
 ) => {
   const [selectedItem, setSelectedItem] = useState(multipleSelect ? [] : null); // selected item from dropdown
   const [selectedIndex, setSelectedIndex] = useState(multipleSelect ? [-1] : -1); // index of selected item from dropdown
@@ -51,6 +52,16 @@ export const useSelectDropdown = (
   useEffect(() => {
     // defaultValue may be equals zero
     if (isExist(defaultValue)) {
+      if (customSelect) {
+        let tmp = [];
+
+        defaultValue.map((o, i) => {
+          tmp.push({ item: o });
+        });
+        setSelectedItem(tmp);
+        return;
+      }
+
       if (multipleSelect) {
         let tmp = [];
 
@@ -94,6 +105,19 @@ export const useSelectDropdown = (
     setSelectedIndex(index);
   };
 
+  const customSelectItem = (value) => {
+    if (multipleSelect) {
+      let tmp = selectedItem;
+      tmp =
+        tmp.filter(d => d?.item == value).length > 0
+          ? tmp.filter(d => d.item !== value)
+          : [...tmp, { item: value }];
+      setSelectedItem(tmp);
+      // setSelectedIndex(tmp.map(d => d.index));
+      return;
+    }
+  }
+
   const reset = () => {
     setSelectedItem(multipleSelect ? [] : null);
     setSelectedIndex(multipleSelect ? [-1] : -1);
@@ -123,6 +147,7 @@ export const useSelectDropdown = (
     selectedItem,
     selectedIndex,
     selectItem,
+    customSelectItem,
     reset,
     searchTxt,
     setSearchTxt,

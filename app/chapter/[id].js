@@ -95,7 +95,7 @@ export default function Chapter() {
             <StatusBar backgroundColor={`${showDetail ? 'rgba(0, 0, 0, 0.7)' : 'transparent'}`} />
             <View style={[styles.detail, { backgroundColor: 'rgba(0, 0, 0, 0.7)', top: StatusBar.currentHeight, width: width, display: showDetail ? 'flex' : 'none' }]}>
                 <Pressable onPress={() => { router.back() }} style={{ paddingVertical: 15, paddingHorizontal: 5 }}><Feather name="arrow-left" size={24} color={COLORS.white} /></Pressable>
-                <Pressable onPress={() => { router.navigate(`/manga/${manga.id}`) }} style={{ flex: 1 }}>
+                <Pressable onPress={() => { router.replace(`/manga/${manga.id}`) }} style={{ flex: 1 }}>
                     <SemiBoldText numberOfLines={1} style={{ fontSize: 18 }}>{getMangaTitle(manga)}</SemiBoldText>
                     <NormalText style={{ fontSize: 14 }}>Chapter {chapterRelation.curr.attributes.chapter}</NormalText>
                 </Pressable>

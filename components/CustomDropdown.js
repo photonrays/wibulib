@@ -23,7 +23,6 @@ export default function CustomDropdown({ data, multiSelect = false, setValue, qu
             defaultValue={defaultValue}
             data={data}
             onSelect={(selectedItem, index) => {
-                console.log("selectedItem: ", selectedItem)
                 if (selectedItem.length !== 0) {
                     if (multiSelect) {
                         setValue(prev => ({ ...prev, [queryKey]: selectedItem.map(obj => obj.value) }))

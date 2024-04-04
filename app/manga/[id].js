@@ -37,7 +37,7 @@ export default function Manga() {
                     fontFamily: 'Poppins_700Bold',
                 },
                 headerBackVisible: false,
-                headerLeft: () => <Pressable onPress={() => { clearManga(); router.navigate("/") }} style={{ paddingVertical: 15, paddingHorizontal: 5 }}>
+                headerLeft: () => <Pressable onPress={() => { clearManga(); router.back() }} style={{ paddingVertical: 15, paddingHorizontal: 5 }}>
                     <Feather name="arrow-left" size={24} color={COLORS.white} />
                 </Pressable>,
 

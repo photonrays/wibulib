@@ -1,26 +1,36 @@
-import { View, Text, StyleSheet, StatusBar, ScrollView, Dimensions, TextInput, Pressable, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, ScrollView, Dimensions, TextInput, Pressable, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
 import { COLORS } from '../../constants';
 import { BoldText, NormalText, SearchFilter, SearchResult } from '../../components';
-import { Stack, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FontAwesome6, Ionicons, Octicons, Feather, AntDesign } from '@expo/vector-icons';
 import { getMangaTag, getSearchManga } from '../../api/manga';
+import { useManga } from '../../contexts/useManga';
 
+const limit = 16
 
 export default function Search() {
     const win = Dimensions.get('window')
     const { title } = useLocalSearchParams()
+    const { clearManga } = useManga()
+
     const [searchValue, setSearchValue] = useState(title || '')
     const [searchResult, setSearchResult] = useState([])
     const [options, setOptions] = useState({ hasAvailableChapters: 'true', availableTranslatedLanguage: ['vi'], includes: ['cover_art', 'author'] })
     const [modalVisible, setModalVisible] = useState(false)
     const [tags, setTags] = useState([])
     const [selectedTags, setSelectedTags] = useState(null)
-    const [page, setPage] = useState(0)
-    const [isLoading, setIsLoading] = useState(false)
-    const [totalManga, setTotalManga] = useState(0)
+    const [UI, setUI] = useState(false);
 
     const flatListRef = useRef(null)
+    const isStop = useRef(false);
+    const isLoading = useRef(false);
+
+    useFocusEffect(
+        useCallback(() => {
+            clearManga()
+        }, [])
+    );
 
     useEffect(() => {
         getMangaTag()
@@ -41,30 +51,6 @@ export default function Search() {
             });
     }, [])
 
-    const searchManga = async () => {
-        setIsLoading(true)
-        try {
-            const { data } = await getSearchManga({ ...options, offset: page * 16, limit: 16, title: searchValue })
-            if (data && data.data) {
-                setSearchResult(prev => {
-                    if (page === 0) return data.data
-                    return [...prev, ...data.data]
-                })
-                setTotalManga(data.total)
-                setIsLoading(false)
-            }
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
-    const handleSubmit = () => {
-        if (page == 0) {
-            searchManga()
-        } else setPage(0)
-        flatListRef?.current?.scrollToOffset({ animated: false, offset: 0 });
-    }
-
     useEffect(() => {
         if (options?.includedTags) {
             setSelectedTags(tags.filter((t) => options.includedTags.includes(t.id)))
@@ -73,23 +59,39 @@ export default function Search() {
         }
     }, [options])
 
-    const renderLoader = () => {
-        return (
-            isLoading ?
-                <View>
-                    <ActivityIndicator size={'large'} color={COLORS.white} />
-                </View> : null
-        )
-    }
-    const loadMoreItem = () => {
-        if (searchResult.length < totalManga) {
-            setPage(page + 1)
+    const getData = async (type) => {
+        if (isLoading.current == true) return;
+        if (type == "loadMore" && isStop.current == true) return;
+        if (type == "refresh") {
+            setSearchResult([]);
+            isStop.current = false;
         }
-    }
+        try {
+            setUI(true);
+            isLoading.current = true;
 
-    useEffect(() => {
-        searchManga()
-    }, [page])
+            const { data } = await getSearchManga({ ...options, offset: type == "loadMore" ? searchResult.length : 0, limit: limit, title: searchValue })
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            isLoading.current = false;
+            if (data.data.length < limit) {
+                isStop.current = true;
+            }
+            setSearchResult(prev => {
+                if (type == "refresh") return data?.data
+                else if (type == "loadMore") return [...prev, ...data?.data]
+            });
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setUI(false);
+        }
+    };
+
+    const renderFooterList = useMemo(() => {
+        if (UI) return <ActivityIndicator size={'large'} color={COLORS.primary} />;
+        if (isStop.current) return <BoldText style={{ fontSize: 18 }}>End of list</BoldText>;
+        return <View />;
+    }, [UI]);
 
     return (
         <View style={styles.container}>
@@ -120,10 +122,9 @@ export default function Search() {
                         inputMode='text'
                         style={{ flex: 1, color: COLORS.white, fontFamily: 'Poppins_400Regular', fontSize: 16 }}
                         placeholderTextColor={COLORS.white} placeholder='Enter a search query...'
-                        // onFocus={() => setFocus(true)}
                         onChangeText={newText => setSearchValue(newText)}
                         defaultValue={searchValue}
-                        onSubmitEditing={handleSubmit}
+                        onSubmitEditing={() => getData("refresh")}
                     />
                     {searchValue !== '' && <Pressable onPress={() => setSearchValue('')}
                         style={{
@@ -161,10 +162,21 @@ export default function Search() {
                         ref={flatListRef}
                         style={{ width: '100%' }}
                         data={searchResult}
-                        keyExtractor={(item) => item.id}
+                        keyExtractor={(item, idx) => idx + ""}
                         renderItem={(item) => <SearchResult manga={item.item} />}
-                        ListFooterComponent={renderLoader}
-                        onEndReached={loadMoreItem}
+                        onEndReached={() => getData("loadMore")}
+                        onEndReachedThreshold={0.3}
+                        refreshControl={
+                            <RefreshControl
+                                refreshing={false}
+                                onRefresh={() => getData("refresh")}
+                            />
+                        }
+                        ListFooterComponent={
+                            <View style={{ alignItems: "center", marginVertical: 10 }}>
+                                {renderFooterList}
+                            </View>
+                        }
                     /> :
                     <View style={{ width: '100%', marginTop: 20, alignItems: 'center' }}>
                         <BoldText style={{ fontSize: 18 }}>No manga found</BoldText>

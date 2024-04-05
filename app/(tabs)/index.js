@@ -6,14 +6,19 @@ import { Stack, router, useFocusEffect } from 'expo-router';
 import useFeaturedTitles from '../../hooks/useFeatureTitles';
 import { useManga } from '../../contexts/useManga';
 import ReaAnimated, { interpolateColor, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import Card2 from '../../components/Card2';
+import useMangaRanking from '../../hooks/useMangaRanking';
+import useLatestChapters from '../../hooks/useLatestChapters';
 
 
 export default function index() {
     const [headerHeight, setHeaderHeight] = useState(0)
     const { data: featuredTitles, isLoading, error } = useFeaturedTitles()
+    const { data: topManga, isLoading: topMangaIsLoading } = useMangaRanking()
     const slideRef = useRef(null)
     const scrollX = useRef(new Animated.Value(0)).current
-    const { latestUpdates, clearManga } = useManga();
+    const { clearManga } = useManga();
+    const { latestUpdates } = useLatestChapters(1)
     const win = Dimensions.get('window')
 
     const transparentValue = useSharedValue(0)
@@ -111,12 +116,14 @@ export default function index() {
                             <NormalText>View All</NormalText>
                         </TouchableHighlight>
                     </View>
-                    <FlatList
-                        horizontal={true}
-                        data={[{}, {}, {}, {}]}
-                        renderItem={({ item }) => <Card />}
+                    {!topMangaIsLoading && topManga?.data && <FlatList
+                        data={topManga.data}
+                        keyExtractor={(obj) => obj.id}
+                        renderItem={(obj, index) => <Card manga={obj.item} />}
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
                         ItemSeparatorComponent={() => <View style={{ width: 14 }} />}
-                    />
+                    />}
                 </View>
             </ScrollView>
         </View>

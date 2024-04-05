@@ -33,7 +33,7 @@ export default function PopularCard({ manga }) {
                         </BoldText>
                     </Link>
                     <NormalText numberOfLines={1} style={{ fontSize: 14 }}>
-                        {manga.relationships?.[0].attributes.name}
+                        {manga.relationships?.[0].attributes?.name}
                     </NormalText>
                 </View>
             </View>

@@ -17,7 +17,7 @@ export default function Chapter({ chapter }) {
                         {chapterTitle}
                     </NormalText>
                 </View>
-                <NormalText style={{ fontSize: 12 }}>{formatNowDistance(new Date(chapter.attributes?.readableAt)) || ""} {chapter.relationships?.[1].attributes?.name}</NormalText>
+                <NormalText style={{ fontSize: 12 }}>{formatNowDistance(new Date(chapter.attributes?.readableAt)) || ""}</NormalText>
             </View>
         </Link>
     )

@@ -1,27 +1,23 @@
 import React from 'react'
-import { Image, StyleSheet, Text, View } from 'react-native'
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native'
 import { COLORS, images } from '../constants'
-import { useFonts, Poppins_700Bold, Poppins_400Regular } from '@expo-google-fonts/poppins'
 import { BoldText } from './BoldText';
+import getCoverArt from '../utils/getCoverArt';
+import { getMangaTitle } from '../utils/getMangaTitle';
+import { SemiBoldText } from './SemiBoldText';
+import { router } from 'expo-router';
 
-export default function Card() {
-    let [fontsLoaded] = useFonts({
-        Poppins_400Regular,
-        Poppins_700Bold,
-    });
-
-    if (!fontsLoaded) {
-        return <Text> Loading...</Text>;
-    }
+export default function Card({ manga }) {
+    const coverArt = getCoverArt(manga).toString()
     return (
-        <View style={{ width: 126, gap: 10, marginBottom: 10 }}>
-            <Image source={images.cover} style={styles.cover} />
+        <Pressable onPress={() => router.navigate(`/manga/${manga.id}`)} style={{ width: 126, gap: 5, marginBottom: 10 }}>
+            <Image source={{ uri: coverArt }} style={styles.cover} />
             <View style={{ overflow: 'hidden', justifyContent: "space-between" }}>
-                <BoldText numberOfLines={2} style={{ fontSize: 16, lineHeight: 20 }}>
-                    Shouwaru Tensai Osananajimi to no Shoubu ni Makete Hatsutaiken o Zenbu Ubawareru Hanashi
-                </BoldText>
+                <SemiBoldText numberOfLines={2} style={{ fontSize: 14 }}>
+                    {getMangaTitle(manga)}
+                </SemiBoldText>
             </View>
-        </View>
+        </Pressable>
     )
 }
 

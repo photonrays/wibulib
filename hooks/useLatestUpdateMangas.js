@@ -1,11 +1,10 @@
-import useLatestChapters from "./useLatestChapters";
 import useSWR from 'swr'
+import { getSearchManga } from '../api/manga';
+import { Includes, MangaContentRating } from '../api/static';
+import { useEffect } from 'react';
 
 
-export default function useLatestUpdateMangas() {
-    const date = new Date;
-    const { latestChapters, chaptersLoading, chapterError } = useLatestChapters()
-
+export default function useLatestUpdateMangas({ latestChapters, chaptersLoading, chapterError, page }) {
     const requestParams = {
         includes: [Includes.COVER_ART],
         ids: Object.keys(latestChapters),
@@ -15,26 +14,15 @@ export default function useLatestUpdateMangas() {
         limit: 64
     };
 
-    const { data, isLoading, error } = useSWR(['latestUpdateMangas', date.getMinutes()], () => getSearchManga(requestParams))
+    const { data, isLoading, error } = useSWR(!chaptersLoading ? ['lastestUpdates', page] : null, () => getSearchManga(requestParams))
+    const successData = data && data.data.result === "ok" && (data.data)
+    const updates = {}
 
-
-    useEffect(() => {
-        if (Object.entries(latestChapters).length > 0) {
-            const requestParams = {
-                includes: [Includes.COVER_ART],
-                ids: Object.keys(latestChapters),
-                contentRating: [MangaContentRating.EROTICA, MangaContentRating.PORNOGRAPHIC, MangaContentRating.SAFE, MangaContentRating.SUGGESTIVE],
-                hasAvailableChapters: "true",
-                availableTranslatedLanguage: ['vi'],
-                limit: 64
-            };
-            getSearchManga(requestParams).then(data => {
-                const updates = {}
-                data.data.data.forEach(manga => updates[manga.id] = { manga, chapterList: latestChapters[manga.id] });
-                setLatestUpdates(updates)
-            }).catch(err => console.log(err))
+    if (successData && !isLoading) {
+        for (const manga of successData.data) {
+            updates[manga.id] = { manga, chapterList: latestChapters[manga.id] }
         }
-    }, [latestChapters, chaptersLoading, chapterError])
+    }
 
-
+    return { latestUpdates: updates, latestUpdatesLoading: isLoading }
 }

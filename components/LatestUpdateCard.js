@@ -17,7 +17,7 @@ export default function LatestUpdateCard({ manga, chapterList }) {
 
     return (
         <Pressable onPress={() => router.push({ pathname: `./chapter/${chapterList?.[0].id}`, params: { mangaId: manga.id } })} style={{ marginBottom: 15 }}>
-            <View style={{ width: width - 30, height: 80, flexDirection: 'row', gap: 10, alignItems: 'stretch' }}>
+            <View style={{ width: width - 30, height: 80, flexDirection: 'row', gap: 10 }}>
                 <Image source={{ uri: coverArt }} style={styles.cover} />
                 <View style={{ flex: 1, maxHeight: 80, overflow: 'hidden', justifyContent: "space-between" }}>
                     <BoldText numberOfLines={1} style={{ fontSize: 16, lineHeight: 20 }}>
@@ -27,8 +27,8 @@ export default function LatestUpdateCard({ manga, chapterList }) {
                         {chapterTitle}
                     </NormalText>
                     <View style={{ flexDirection: 'row', gap: 10, justifyContent: 'space-between' }}>
-                        <NormalText numberOfLines={1} style={{ fontSize: 12 }}>
-                            {chapterList[0].relationships?.[0].attributes.name}
+                        <NormalText numberOfLines={1} style={{ fontSize: 12, flex: 1, flexShrink: 1 }}>
+                            {chapterList[0].relationships?.[0].attributes?.name}
                         </NormalText>
                         <NormalText numberOfLines={1} style={{ fontSize: 12 }}>
                             {formatNowDistance(new Date(chapterList[0].attributes?.readableAt)) || ""}

@@ -8,35 +8,13 @@ export const MangaContext = createContext({
     manga: null,
     updateManga: () => null,
     mangaFeed: null,
-    latestUpdates: {},
     updateMangaByChapterId: () => null,
     clearManga: () => null,
 });
 
 export function MangaProvider({ children }) {
     const [manga, setManga] = useState(null)
-    const [latestUpdates, setLatestUpdates] = useState({});
     const [mangaFeed, setMangaFeed] = useState()
-
-    const { latestChapters, chaptersLoading } = useLatestChapters(1)
-
-    useEffect(() => {
-        if (Object.entries(latestChapters).length > 0) {
-            const requestParams = {
-                includes: [Includes.COVER_ART],
-                ids: Object.keys(latestChapters),
-                contentRating: [MangaContentRating.EROTICA, MangaContentRating.PORNOGRAPHIC, MangaContentRating.SAFE, MangaContentRating.SUGGESTIVE],
-                hasAvailableChapters: "true",
-                availableTranslatedLanguage: ['vi'],
-                limit: 64
-            };
-            getSearchManga(requestParams).then(data => {
-                const updates = {}
-                data.data.data.forEach(manga => updates[manga.id] = { manga, chapterList: latestChapters[manga.id] });
-                setLatestUpdates(updates)
-            }).catch(err => console.log(err))
-        }
-    }, [chaptersLoading])
 
     const updateManga = async (id) => {
         if (id) {
@@ -52,7 +30,7 @@ export function MangaProvider({ children }) {
     const updateMangaByChapterId = async (cid) => {
         const { data } = await getChapterId(cid)
         if (data && data.data) {
-            updateManga(data.data.relationships?.[1].id)
+            updateManga(data.data.relationships.filter(rela => rela.type == "manga")[0].id)
         }
     }
 
@@ -81,7 +59,7 @@ export function MangaProvider({ children }) {
     }
 
     return (
-        <MangaContext.Provider value={{ manga, updateManga, mangaFeed, latestUpdates, updateMangaByChapterId, clearManga }}>
+        <MangaContext.Provider value={{ manga, updateManga, mangaFeed, updateMangaByChapterId, clearManga }}>
             {children}
         </MangaContext.Provider>
     );

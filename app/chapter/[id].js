@@ -72,7 +72,7 @@ export default function Chapter() {
     }
 
     const onMomentumScrollEnd = () => {
-        sliderRef.current.setNativeProps({ value: parseInt(currentIndex + 1) });
+        sliderRef.current.setNativeProps({ value: parseInt(currentIndex + 1) || 0 });
         setPage(currentIndex + 1)
     }
 

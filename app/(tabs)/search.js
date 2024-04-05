@@ -6,8 +6,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FontAwesome6, Ionicons, Octicons, Feather, AntDesign } from '@expo/vector-icons';
 import { getMangaTag, getSearchManga } from '../../api/manga';
 import { useManga } from '../../contexts/useManga';
+import Card2 from '../../components/Card2';
 
 const limit = 16
+const initialOptionKeys = ["hasAvailableChapters", "availableTranslatedLanguage", "includes", "offset", "limit"]
 
 export default function Search() {
     const win = Dimensions.get('window')
@@ -16,11 +18,12 @@ export default function Search() {
 
     const [searchValue, setSearchValue] = useState(title || '')
     const [searchResult, setSearchResult] = useState([])
-    const [options, setOptions] = useState({ hasAvailableChapters: 'true', availableTranslatedLanguage: ['vi'], includes: ['cover_art', 'author'] })
+    const [options, setOptions] = useState({ hasAvailableChapters: 'true', availableTranslatedLanguage: ['vi'], includes: ['cover_art', 'author'], offset: 0, limit })
     const [modalVisible, setModalVisible] = useState(false)
     const [tags, setTags] = useState([])
     const [selectedTags, setSelectedTags] = useState(null)
     const [UI, setUI] = useState(false);
+    const [selectedLayout, setSelectedLayout] = useState(1)
 
     const flatListRef = useRef(null)
     const isStop = useRef(false);
@@ -31,6 +34,11 @@ export default function Search() {
             clearManga()
         }, [])
     );
+
+    useEffect(() => {
+        setSearchValue(title)
+        getData("refresh", title)
+    }, [title])
 
     useEffect(() => {
         getMangaTag()
@@ -59,7 +67,7 @@ export default function Search() {
         }
     }, [options])
 
-    const getData = async (type) => {
+    const getData = async (type, title = null, customOptions = null) => {
         if (isLoading.current == true) return;
         if (type == "loadMore" && isStop.current == true) return;
         if (type == "refresh") {
@@ -70,7 +78,7 @@ export default function Search() {
             setUI(true);
             isLoading.current = true;
 
-            const { data } = await getSearchManga({ ...options, offset: type == "loadMore" ? searchResult.length : 0, limit: limit, title: searchValue })
+            const { data } = await getSearchManga({ ...(customOptions || options), offset: type == "loadMore" ? searchResult.length : 0, limit: limit, title: title || searchValue })
             await new Promise((resolve) => setTimeout(resolve, 500));
             isLoading.current = false;
             if (data.data.length < limit) {
@@ -87,8 +95,17 @@ export default function Search() {
         }
     };
 
+    const clearOptions = () => {
+        setOptions({ hasAvailableChapters: 'true', availableTranslatedLanguage: ['vi'], includes: ['cover_art', 'author'], offset: searchResult.length, limit })
+        getData("refresh", null, { hasAvailableChapters: 'true', availableTranslatedLanguage: ['vi'], includes: ['cover_art', 'author'], offset: searchResult.length, limit })
+    }
+
     const renderFooterList = useMemo(() => {
         if (UI) return <ActivityIndicator size={'large'} color={COLORS.primary} />;
+        if (isStop.current && searchResult.length === 0) return
+        (<View style={{ width: '100%', marginTop: 20, alignItems: 'center' }}>
+            <BoldText style={{ fontSize: 18 }}>No manga found</BoldText>
+        </View>)
         if (isStop.current) return <BoldText style={{ fontSize: 18 }}>End of list</BoldText>;
         return <View />;
     }, [UI]);
@@ -140,29 +157,35 @@ export default function Search() {
                 </View>
 
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Pressable style={({ pressed }) => [styles.buttonContainer, { backgroundColor: pressed ? COLORS.gray2 : COLORS.gray }]} onPress={() => setModalVisible(true)}>
-                        <Feather name="filter" size={26} color={COLORS.white} />
-                    </Pressable>
+                    <View style={{ flexDirection: 'row', gap: 10 }}>
+                        <Pressable style={({ pressed }) => [styles.buttonContainer, { backgroundColor: pressed ? COLORS.gray2 : COLORS.gray }]} onPress={() => setModalVisible(true)}>
+                            <Feather name="filter" size={26} color={COLORS.white} />
+                        </Pressable>
+                        {Object.keys(options).filter(k => !initialOptionKeys.includes(k)).length !== 0 && <Pressable
+                            onPress={clearOptions}
+                            style={[styles.buttonContainer, { backgroundColor: COLORS.primary, width: 120 }]}>
+                            <BoldText style={{ fontSize: 16 }}>CLEAR FILTER</BoldText>
+                        </Pressable>}
+                    </View>
 
                     <View style={{ flexDirection: 'row', backgroundColor: COLORS.gray, borderRadius: 5 }}>
-                        <Pressable style={({ pressed }) => [styles.buttonContainer, { backgroundColor: pressed ? COLORS.gray2 : COLORS.gray }]}>
+                        <Pressable onPress={() => setSelectedLayout(1)} style={({ pressed }) => [styles.buttonContainer, { backgroundColor: selectedLayout === 1 ? COLORS.gray2 : (pressed ? COLORS.gray2 : COLORS.gray) }]}>
                             <Feather name="list" size={30} color={COLORS.white} />
                         </Pressable>
-                        <Pressable style={({ pressed }) => [styles.buttonContainer, { backgroundColor: pressed ? COLORS.gray2 : COLORS.gray }]}>
-                            <Octicons name="rows" size={26} color={COLORS.white} />
-                        </Pressable>
-                        <Pressable style={({ pressed }) => [styles.buttonContainer, { backgroundColor: pressed ? COLORS.gray2 : COLORS.gray }]}>
+                        <Pressable onPress={() => setSelectedLayout(2)} style={({ pressed }) => [styles.buttonContainer, { backgroundColor: selectedLayout === 2 ? COLORS.gray2 : (pressed ? COLORS.gray2 : COLORS.gray) }]}>
                             <Feather name="grid" size={30} color={COLORS.white} />
                         </Pressable>
                     </View>
                 </View>
 
-                {searchResult.length !== 0 ?
+
+                {selectedLayout === 1 ?
                     <FlatList
                         ref={flatListRef}
                         style={{ width: '100%' }}
                         data={searchResult}
-                        keyExtractor={(item, idx) => idx + ""}
+                        key={'_'}
+                        keyExtractor={(item, idx) => idx + "_"}
                         renderItem={(item) => <SearchResult manga={item.item} />}
                         onEndReached={() => getData("loadMore")}
                         onEndReachedThreshold={0.3}
@@ -177,11 +200,32 @@ export default function Search() {
                                 {renderFooterList}
                             </View>
                         }
-                    /> :
-                    <View style={{ width: '100%', marginTop: 20, alignItems: 'center' }}>
-                        <BoldText style={{ fontSize: 18 }}>No manga found</BoldText>
-                    </View>
-                }
+                    />
+                    :
+                    <FlatList
+                        ref={flatListRef}
+                        style={{ width: '100%' }}
+                        data={searchResult}
+                        key={'#'}
+                        keyExtractor={(item, idx) => idx + "#"}
+                        renderItem={(item) => <Card2 manga={item.item} />}
+                        numColumns={2}
+                        contentContainerStyle={{ gap: 10 }}
+                        columnWrapperStyle={{ gap: 10 }}
+                        onEndReached={() => getData("loadMore")}
+                        onEndReachedThreshold={0.3}
+                        refreshControl={
+                            <RefreshControl
+                                refreshing={false}
+                                onRefresh={() => getData("refresh")}
+                            />
+                        }
+                        ListFooterComponent={
+                            <View style={{ alignItems: "center", marginVertical: 10 }}>
+                                {renderFooterList}
+                            </View>
+                        }
+                    />}
 
             </View>
         </View>

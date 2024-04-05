@@ -1,8 +1,8 @@
-import { View, Text, StyleSheet, StatusBar, ScrollView, Dimensions, TextInput, Pressable, FlatList } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, ScrollView, Dimensions, TextInput, Pressable, FlatList, ActivityIndicator } from 'react-native';
 import { COLORS } from '../../constants';
 import { BoldText, NormalText, SearchFilter, SearchResult } from '../../components';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FontAwesome6, Ionicons, Octicons, Feather, AntDesign } from '@expo/vector-icons';
 import { getMangaTag, getSearchManga } from '../../api/manga';
 
@@ -16,6 +16,11 @@ export default function Search() {
     const [modalVisible, setModalVisible] = useState(false)
     const [tags, setTags] = useState([])
     const [selectedTags, setSelectedTags] = useState(null)
+    const [page, setPage] = useState(0)
+    const [isLoading, setIsLoading] = useState(false)
+    const [totalManga, setTotalManga] = useState(0)
+
+    const flatListRef = useRef(null)
 
     useEffect(() => {
         getMangaTag()
@@ -36,15 +41,28 @@ export default function Search() {
             });
     }, [])
 
-    const handleSubmit = async () => {
+    const searchManga = async () => {
+        setIsLoading(true)
         try {
-            const { data } = await getSearchManga({ ...options, title: searchValue })
+            const { data } = await getSearchManga({ ...options, offset: page * 16, limit: 16, title: searchValue })
             if (data && data.data) {
-                setSearchResult(data.data)
+                setSearchResult(prev => {
+                    if (page === 0) return data.data
+                    return [...prev, ...data.data]
+                })
+                setTotalManga(data.total)
+                setIsLoading(false)
             }
         } catch (error) {
             console.log(error)
         }
+    }
+
+    const handleSubmit = () => {
+        if (page == 0) {
+            searchManga()
+        } else setPage(0)
+        flatListRef?.current?.scrollToOffset({ animated: false, offset: 0 });
     }
 
     useEffect(() => {
@@ -54,6 +72,24 @@ export default function Search() {
             setSelectedTags(null)
         }
     }, [options])
+
+    const renderLoader = () => {
+        return (
+            isLoading ?
+                <View>
+                    <ActivityIndicator size={'large'} color={COLORS.white} />
+                </View> : null
+        )
+    }
+    const loadMoreItem = () => {
+        if (searchResult.length < totalManga) {
+            setPage(page + 1)
+        }
+    }
+
+    useEffect(() => {
+        searchManga()
+    }, [page])
 
     return (
         <View style={styles.container}>
@@ -120,10 +156,19 @@ export default function Search() {
                     </View>
                 </View>
 
-                {searchResult.length !== 0 &&
-                    <ScrollView style={{ width: '100%' }}>
-                        {searchResult.map((manga, index) => <SearchResult key={index} manga={manga} />)}
-                    </ScrollView>
+                {searchResult.length !== 0 ?
+                    <FlatList
+                        ref={flatListRef}
+                        style={{ width: '100%' }}
+                        data={searchResult}
+                        keyExtractor={(item) => item.id}
+                        renderItem={(item) => <SearchResult manga={item.item} />}
+                        ListFooterComponent={renderLoader}
+                        onEndReached={loadMoreItem}
+                    /> :
+                    <View style={{ width: '100%', marginTop: 20, alignItems: 'center' }}>
+                        <BoldText style={{ fontSize: 18 }}>No manga found</BoldText>
+                    </View>
                 }
 
             </View>

@@ -1,8 +1,8 @@
 import { View, Text, StyleSheet, FlatList, TouchableHighlight, Image, ScrollView, StatusBar, Pressable, Dimensions, Animated } from 'react-native';
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { COLORS } from '../../constants'
 import { SectionTextHeader, PopularCard, LatestUpdateCard, Card, NormalText, BoldText, SearchBar } from '../../components';
-import { Stack, router } from 'expo-router';
+import { Stack, router, useFocusEffect } from 'expo-router';
 import useFeaturedTitles from '../../hooks/useFeatureTitles';
 import { useManga } from '../../contexts/useManga';
 import ReaAnimated, { interpolateColor, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
@@ -13,7 +13,7 @@ export default function index() {
     const { data: featuredTitles, isLoading, error } = useFeaturedTitles()
     const slideRef = useRef(null)
     const scrollX = useRef(new Animated.Value(0)).current
-    const { latestUpdates } = useManga();
+    const { latestUpdates, clearManga } = useManga();
     const win = Dimensions.get('window')
 
     const transparentValue = useSharedValue(0)
@@ -39,6 +39,12 @@ export default function index() {
         };
     });
 
+    useFocusEffect(
+        useCallback(() => {
+            clearManga()
+        }, [])
+    );
+
     return (
         <View style={{ flex: 1 }}>
             <ReaAnimated.View
@@ -61,7 +67,7 @@ export default function index() {
                 <View style={{ marginBottom: 20 }}>
                     <View style={styles.header}>
                         <SectionTextHeader>
-                            Popular New Title
+                            Popular New Titles
                         </SectionTextHeader>
                     </View>
                     {!isLoading && featuredTitles?.data && <FlatList
@@ -80,7 +86,7 @@ export default function index() {
                 </View>
                 <View style={{ marginBottom: 20, marginHorizontal: 15 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <SectionTextHeader style={{ marginBottom: 10 }}>Latest Update</SectionTextHeader>
+                        <SectionTextHeader style={{ marginBottom: 10 }}>Latest Updates</SectionTextHeader>
                         <TouchableHighlight onPress={() => router.push("/latest")}>
                             <NormalText>View all</NormalText>
                         </TouchableHighlight>
@@ -100,7 +106,7 @@ export default function index() {
 
                 <View style={{ marginBottom: 20, marginHorizontal: 15 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <SectionTextHeader style={{ marginBottom: 10 }}>Top Manga</SectionTextHeader>
+                        <SectionTextHeader style={{ marginBottom: 10 }}>Top Mangas</SectionTextHeader>
                         <TouchableHighlight>
                             <NormalText>View All</NormalText>
                         </TouchableHighlight>

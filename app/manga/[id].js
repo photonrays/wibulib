@@ -18,7 +18,9 @@ export default function Manga() {
     const width = Dimensions.get('window').width;
 
     useEffect(() => {
-        updateManga(id)
+        if (!manga || id !== manga.id) {
+            updateManga(id)
+        }
     }, [])
 
     const coverArt = getCoverArt(manga).toString()
@@ -37,7 +39,7 @@ export default function Manga() {
                     fontFamily: 'Poppins_700Bold',
                 },
                 headerBackVisible: false,
-                headerLeft: () => <Pressable onPress={() => { clearManga(); router.back() }} style={{ paddingVertical: 15, paddingHorizontal: 5 }}>
+                headerLeft: () => <Pressable onPress={() => { router.back() }} style={{ paddingVertical: 15, paddingHorizontal: 5 }}>
                     <Feather name="arrow-left" size={24} color={COLORS.white} />
                 </Pressable>,
 

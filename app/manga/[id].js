@@ -6,28 +6,33 @@ import { Ionicons, MaterialCommunityIcons, Feather, FontAwesome } from '@expo/ve
 import Chapter from '../../components/Chapter';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useManga } from '../../contexts/useManga';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import getCoverArt from '../../utils/getCoverArt';
 import { getMangaTitle } from '../../utils/getMangaTitle';
-import { BoldText, NormalText, SemiBoldText } from '../../components';
-
+import { BoldText, NormalText, SemiBoldText, BookmarkModal } from '../../components';
+import { storage } from '../../store/MMKV';
+import { useMMKVObject } from 'react-native-mmkv';
 
 export default function Manga() {
-    const { id } = useLocalSearchParams()
-    const { manga, mangaFeed, updateManga, clearManga } = useManga()
-    const width = Dimensions.get('window').width;
+    const [library = [], setLibrary] = useMMKVObject('library', storage)
+    const [isVisible, setIsVisible] = useState(false)
 
-    useEffect(() => {
-        if (!manga || id !== manga.id) {
-            updateManga(id)
-        }
-    }, [])
+    const { id } = useLocalSearchParams()
+    const { manga, mangaFeed, updateManga } = useManga()
+    const width = Dimensions.get('window').width;
 
     const coverArt = getCoverArt(manga).toString()
     const title = getMangaTitle(manga)
     const tags = manga?.attributes?.tags?.filter((tag) => tag.attributes.group == 'genre')
 
     const headerHeight = useHeaderHeight()
+
+    useEffect(() => {
+        if (!manga || id !== manga?.id) {
+            updateManga(id)
+        }
+    }, [])
+
     return (
         <ScrollView style={{ flex: 1, gap: 10, backgroundColor: COLORS.black }}>
             <Stack.Screen options={{
@@ -44,6 +49,7 @@ export default function Manga() {
                 </Pressable>,
 
             }} />
+            <BookmarkModal isVisible={isVisible} setIsVisible={setIsVisible} id={manga?.id} coverArt={coverArt} title={title} library={library} />
             <ImageBackground source={{ uri: coverArt }} style={[styles.backgroundImage, { paddingTop: headerHeight, width: width }]} >
                 <LinearGradient style={[styles.innerContainer, { top: -headerHeight, bottom: 0, width: width }]} colors={['rgba(0,0,0, 0.7)', COLORS.black]} locations={[0.5, 0.7]}></LinearGradient>
                 <View style={{ flexDirection: 'row', gap: 10, alignItems: 'stretch', marginBottom: 10 }}>
@@ -52,7 +58,6 @@ export default function Manga() {
                         <BoldText numberOfLines={10} style={{ fontSize: 18, lineHeight: 22 }}>
                             {title}
                         </BoldText>
-                        {/* <View></View> */}
                         <View numberOfLines={3} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                             <Ionicons name="person-outline" size={12} color={COLORS.white} />
                             <NormalText style={{ fontSize: 14 }}>
@@ -71,9 +76,18 @@ export default function Manga() {
             </ImageBackground>
 
             <View style={{ flexDirection: "row", gap: 10, marginBottom: 10, paddingHorizontal: 15 }}>
-                <Pressable style={{ padding: 6, borderRadius: 5, backgroundColor: COLORS.primary }}>
-                    <Feather name="bookmark" size={24} color={COLORS.white} />
-                </Pressable>
+                {Object.keys(library).includes(manga?.id)
+                    ? <Pressable onPress={() => setLibrary(prev => {
+                        const { [manga?.id]: _, ...rest } = prev;
+                        return rest
+                    })} style={({ pressed }) => [{ padding: 6, borderRadius: 5, backgroundColor: COLORS.primary, opacity: pressed ? 0.7 : 1 }]}>
+                        <Feather name="check" size={24} color={COLORS.white} />
+                    </Pressable>
+                    : <Pressable onPress={() => setIsVisible(true)}
+                        style={({ pressed }) => [{ padding: 6, borderRadius: 5, backgroundColor: COLORS.primary, opacity: pressed ? 0.7 : 1 }]}>
+                        <Feather name="bookmark" size={24} color={COLORS.white} />
+                    </Pressable>
+                }
                 <Pressable style={{ padding: 6, paddingHorizontal: 20, borderRadius: 5, backgroundColor: COLORS.gray, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 10, flex: 1 }}>
                     <Feather name="book-open" size={24} color={COLORS.white} />
                     <NormalText>Read</NormalText>

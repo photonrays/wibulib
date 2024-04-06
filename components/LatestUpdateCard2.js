@@ -8,6 +8,7 @@ import getChapterTitle from '../utils/getChapterTitle'
 import { formatNowDistance } from '../utils/dateFns'
 import { BoldText } from './BoldText'
 import { NormalText } from './NormalText'
+import { Vn, Gb } from "../assets/images"
 
 export default function LatestUpdateCard2({ manga, chapterList }) {
     const width = Dimensions.get('window').width;
@@ -18,9 +19,12 @@ export default function LatestUpdateCard2({ manga, chapterList }) {
         const chapterTitle = getChapterTitle(chapter)
         return (
             <Pressable onPress={() => router.push({ pathname: `./chapter/${chapter?.id}`, params: { mangaId: manga.id } })} style={styles.chapter}>
-                <BoldText numberOfLines={1} style={{ fontSize: 16, lineHeight: 20 }}>
-                    {chapterTitle}
-                </BoldText>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    {/* {chapter?.attributes?.translatedLanguage == 'en' ? <Gb width={24} height={24} /> : <Vn width={24} height={24} />} */}
+                    <BoldText numberOfLines={1} style={{ fontSize: 16, lineHeight: 20 }}>
+                        {chapterTitle}
+                    </BoldText>
+                </View>
                 <NormalText numberOfLines={1} style={{ fontSize: 14 }}>
                     {chapter?.relationships?.[0].attributes?.name || "No Group"}
                 </NormalText>

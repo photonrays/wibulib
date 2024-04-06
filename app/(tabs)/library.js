@@ -1,23 +1,48 @@
-import { View, Text, StyleSheet, StatusBar, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, ScrollView, Dimensions, Pressable } from 'react-native';
 import { COLORS } from '../../constants';
 import { BoldText, NormalText } from '../../components';
-import { Stack } from 'expo-router';
+import { FontAwesome6, Ionicons, Octicons, Feather, AntDesign } from '@expo/vector-icons';
+import { Stack, router, useFocusEffect } from 'expo-router';
+import { useMMKVObject } from 'react-native-mmkv';
+import { storage } from '../../store/MMKV';
+import { Card2 } from '../../components';
+import { useCallback } from 'react';
+import { useManga } from '../../contexts/useManga';
 
 
 export default function Library() {
-    const win = Dimensions.get('window')
+    const width = Dimensions.get('window').width
+
+    const [library = [], setLibrary] = useMMKVObject('library', storage)
+    const { clearManga } = useManga()
+
+    useFocusEffect(
+        useCallback(() => {
+            clearManga()
+        }, [])
+    );
+
+
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
             <Stack.Screen options={{
-                headerShown: false,
+                headerShown: false
             }} />
-            <StatusBar backgroundColor={'transparent'} />
-            <View style={{ flex: 1 }}>
-                <View style={[styles.titleContainer, { width: win.width }]}>
-                    <BoldText style={{ fontSize: 20, }}>LIBRARY</BoldText>
-                </View>
+
+            <View style={[styles.detail, { width: width }]}>
+                <Pressable onPress={() => { router.back() }} style={{ paddingVertical: 15, paddingHorizontal: 5 }}>
+                    <Feather name="arrow-left" size={24} color={COLORS.white} />
+                </Pressable>
+                <BoldText style={{ fontSize: 20 }}>LIBRARY</BoldText>
             </View>
-        </View>
+            <View>
+                <Pressable onPress={() => setLibrary([])}><NormalText>Reset library</NormalText></Pressable>
+            </View>
+            <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+                {/* {Object.entries(library).map(([key, value], index) =>
+                    <Card2 key={index} id={key} cover={value.coverArt} title={value.title} />)} */}
+            </View>
+        </ScrollView>
     );
 }
 
@@ -25,13 +50,12 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.black,
-        position: 'relative',
+        padding: 15
     },
-    titleContainer: {
-        flex: 1,
-        paddingTop: StatusBar.currentHeight + 20,
-        paddingHorizontal: 15,
+    detail: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: 10,
+        paddingTop: StatusBar.currentHeight,
     }
 })

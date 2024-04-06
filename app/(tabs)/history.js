@@ -1,23 +1,26 @@
-import { View, Text, StyleSheet, StatusBar, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, ScrollView, Dimensions, Pressable } from 'react-native';
 import { COLORS } from '../../constants';
 import { BoldText, NormalText } from '../../components';
-import { Stack } from 'expo-router';
+import { FontAwesome6, Ionicons, Octicons, Feather, AntDesign } from '@expo/vector-icons';
+import { Stack, router } from 'expo-router';
 
 
 export default function History() {
-    const win = Dimensions.get('window')
+    const width = Dimensions.get('window').width
+
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
             <Stack.Screen options={{
-                headerShown: false,
+                headerShown: false
             }} />
-            <StatusBar backgroundColor={'transparent'} />
-            <View style={{ flex: 1 }}>
-                <View style={[styles.titleContainer, { width: win.width }]}>
-                    <BoldText style={{ fontSize: 20, }}>HISTORY</BoldText>
-                </View>
+
+            <View style={[styles.detail, { width: width }]}>
+                <Pressable onPress={() => { router.back() }} style={{ paddingVertical: 15, paddingHorizontal: 5 }}>
+                    <Feather name="arrow-left" size={24} color={COLORS.white} />
+                </Pressable>
+                <BoldText style={{ fontSize: 20 }}>HISTORY</BoldText>
             </View>
-        </View>
+        </ScrollView>
     );
 }
 
@@ -25,13 +28,12 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.black,
-        position: 'relative',
+        padding: 15
     },
-    titleContainer: {
-        flex: 1,
-        paddingTop: StatusBar.currentHeight + 20,
-        paddingHorizontal: 15,
+    detail: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: 10,
+        paddingTop: StatusBar.currentHeight,
     }
 })

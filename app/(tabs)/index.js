@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, FlatList, TouchableHighlight, Image, ScrollView, StatusBar, Pressable, Dimensions, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableHighlight, Image, ScrollView, StatusBar, Pressable, Dimensions, Animated } from 'react-native';
+import { FlatList } from 'react-native-gesture-handler'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { COLORS } from '../../constants'
 import { SectionTextHeader, PopularCard, LatestUpdateCard, Card, NormalText, BoldText, SearchBar } from '../../components';
@@ -6,7 +7,6 @@ import { Stack, router, useFocusEffect } from 'expo-router';
 import useFeaturedTitles from '../../hooks/useFeatureTitles';
 import { useManga } from '../../contexts/useManga';
 import ReaAnimated, { interpolateColor, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
-import Card2 from '../../components/Card2';
 import useMangaRanking from '../../hooks/useMangaRanking';
 import useLatestChapters from '../../hooks/useLatestChapters';
 

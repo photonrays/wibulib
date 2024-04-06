@@ -1,6 +1,6 @@
 import React from 'react'
 import { Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-native'
-import { COLORS, images } from '../constants'
+import { COLORS } from '../constants'
 import getCoverArt from '../utils/getCoverArt'
 import { Link, router } from 'expo-router'
 import { getMangaTitle } from '../utils/getMangaTitle'
@@ -8,6 +8,7 @@ import getChapterTitle from '../utils/getChapterTitle'
 import { formatNowDistance } from '../utils/dateFns'
 import { BoldText } from './BoldText'
 import { NormalText } from './NormalText'
+import { Vn, Gb } from "../assets/images"
 
 export default function LatestUpdateCard({ manga, chapterList }) {
     const width = Dimensions.get('window').width;
@@ -23,9 +24,12 @@ export default function LatestUpdateCard({ manga, chapterList }) {
                     <BoldText numberOfLines={1} style={{ fontSize: 16, lineHeight: 20 }}>
                         {title}
                     </BoldText>
-                    <NormalText numberOfLines={1} style={{ fontSize: 14 }}>
-                        {chapterTitle}
-                    </NormalText>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        {/* {chapterList?.[0].attributes?.translatedLanguage == 'en' ? <Gb width={24} height={24} /> : <Vn width={24} height={24} />} */}
+                        <NormalText numberOfLines={1} style={{ fontSize: 14 }}>
+                            {chapterTitle}
+                        </NormalText>
+                    </View>
                     <View style={{ flexDirection: 'row', gap: 10, justifyContent: 'space-between' }}>
                         <NormalText numberOfLines={1} style={{ fontSize: 12, flex: 1, flexShrink: 1 }}>
                             {chapterList[0].relationships?.[0].attributes?.name}

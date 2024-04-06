@@ -1,5 +1,4 @@
 import { Dimensions, Pressable, ScrollView, StatusBar, StyleSheet, Text, TouchableHighlight, View } from 'react-native'
-import { useHeaderHeight } from '@react-navigation/elements'
 import { COLORS } from '../constants'
 import { Stack, router, useFocusEffect } from 'expo-router'
 import { FontAwesome6, Ionicons, Octicons, Feather, AntDesign } from '@expo/vector-icons';
@@ -13,7 +12,6 @@ import useLatestChapters from '../hooks/useLatestChapters';
 const totalPage = 15
 
 export default function latest() {
-    const headerHeight = useHeaderHeight()
     const [currentPage, setCurrentPage] = useState(1)
     const [pageRange, setPageRange] = useState([1])
     const { clearManga } = useManga();
@@ -35,7 +33,7 @@ export default function latest() {
     }, [currentPage]);
 
     return (
-        <ScrollView style={{ flex: 1, backgroundColor: COLORS.black, paddingTop: headerHeight, padding: 15 }}>
+        <ScrollView style={{ flex: 1, backgroundColor: COLORS.black, padding: 15 }}>
             <Stack.Screen options={{
                 headerShown: false
             }} />

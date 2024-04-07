@@ -13,8 +13,11 @@ import { useManga } from '../../contexts/useManga';
 export default function Library() {
     const width = Dimensions.get('window').width
 
-    const [library = [], setLibrary] = useMMKVObject('library', storage)
+    const [library, setLibrary] = useMMKVObject('library', storage)
     const { clearManga } = useManga()
+
+    console.log("library: ", library)
+
 
     useFocusEffect(
         useCallback(() => {
@@ -36,7 +39,7 @@ export default function Library() {
                 <BoldText style={{ fontSize: 20 }}>LIBRARY</BoldText>
             </View>
             <View>
-                <Pressable onPress={() => setLibrary([])}><NormalText>Reset library</NormalText></Pressable>
+                <Pressable onPress={() => setLibrary()}><NormalText>Reset library</NormalText></Pressable>
             </View>
             <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
                 {/* {Object.entries(library).map(([key, value], index) =>

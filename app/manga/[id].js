@@ -14,8 +14,9 @@ import { storage } from '../../store/MMKV';
 import { useMMKVObject } from 'react-native-mmkv';
 
 export default function Manga() {
-    const [library = [], setLibrary] = useMMKVObject('library', storage)
+    const [library, setLibrary] = useMMKVObject('library', storage)
     const [isVisible, setIsVisible] = useState(false)
+    const [modalType, setModalType] = useState('add')
 
     const { id } = useLocalSearchParams()
     const { manga, mangaFeed, updateManga } = useManga()
@@ -49,7 +50,7 @@ export default function Manga() {
                 </Pressable>,
 
             }} />
-            <BookmarkModal isVisible={isVisible} setIsVisible={setIsVisible} id={manga?.id} coverArt={coverArt} title={title} library={library} />
+            <BookmarkModal type={modalType} isVisible={isVisible} setIsVisible={setIsVisible} id={manga?.id} coverArt={coverArt} title={title} library={library} setLibrary={setLibrary} />
             <ImageBackground source={{ uri: coverArt }} style={[styles.backgroundImage, { paddingTop: headerHeight, width: width }]} >
                 <LinearGradient style={[styles.innerContainer, { top: -headerHeight, bottom: 0, width: width }]} colors={['rgba(0,0,0, 0.7)', COLORS.black]} locations={[0.5, 0.7]}></LinearGradient>
                 <View style={{ flexDirection: 'row', gap: 10, alignItems: 'stretch', marginBottom: 10 }}>
@@ -76,14 +77,11 @@ export default function Manga() {
             </ImageBackground>
 
             <View style={{ flexDirection: "row", gap: 10, marginBottom: 10, paddingHorizontal: 15 }}>
-                {Object.keys(library).includes(manga?.id)
-                    ? <Pressable onPress={() => setLibrary(prev => {
-                        const { [manga?.id]: _, ...rest } = prev;
-                        return rest
-                    })} style={({ pressed }) => [{ padding: 6, borderRadius: 5, backgroundColor: COLORS.primary, opacity: pressed ? 0.7 : 1 }]}>
+                {Object.values(library).filter(c => c.items[manga?.id]).length != 0
+                    ? <Pressable onPress={() => { setModalType('edit'); setIsVisible(true) }} style={({ pressed }) => [{ padding: 6, borderRadius: 5, backgroundColor: COLORS.primary, opacity: pressed ? 0.7 : 1 }]}>
                         <Feather name="check" size={24} color={COLORS.white} />
                     </Pressable>
-                    : <Pressable onPress={() => setIsVisible(true)}
+                    : <Pressable onPress={() => { setModalType('add'); setIsVisible(true) }}
                         style={({ pressed }) => [{ padding: 6, borderRadius: 5, backgroundColor: COLORS.primary, opacity: pressed ? 0.7 : 1 }]}>
                         <Feather name="bookmark" size={24} color={COLORS.white} />
                     </Pressable>

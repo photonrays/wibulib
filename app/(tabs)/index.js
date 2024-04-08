@@ -9,6 +9,8 @@ import { useManga } from '../../contexts/useManga';
 import ReaAnimated, { interpolateColor, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import useMangaRanking from '../../hooks/useMangaRanking';
 import useLatestChapters from '../../hooks/useLatestChapters';
+import { useMMKVObject } from 'react-native-mmkv';
+import { storage } from '../../store/MMKV';
 
 
 export default function index() {
@@ -20,6 +22,12 @@ export default function index() {
     const { clearManga } = useManga();
     const { latestUpdates } = useLatestChapters(1)
     const win = Dimensions.get('window')
+    const [history, setHistory] = useMMKVObject('history', storage)
+    console.log("history: ", history)
+
+    // useEffect(() => {
+    //     setHistory()
+    // }, [])
 
     const transparentValue = useSharedValue(0)
 
@@ -31,8 +39,6 @@ export default function index() {
             transparentValue.value = 1
         }
     }
-
-    console.log("re render")
 
     const animatedStyles = useAnimatedStyle(() => {
         return {

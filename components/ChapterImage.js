@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { ActivityIndicator, Dimensions, Image, View } from 'react-native';
 import { COLORS } from '../constants';
 
@@ -25,4 +25,4 @@ const ChapterImage = ({ uri }) => {
     );
 };
 
-export default ChapterImage;
+export default memo(ChapterImage);

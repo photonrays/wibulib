@@ -14,7 +14,10 @@ import getChapterTitle from '../../utils/getChapterTitle'
 import Slider from '@react-native-community/slider';
 import { useMMKVObject } from 'react-native-mmkv'
 import { storage } from '../../store/MMKV'
+import getCoverArt from '../../utils/getCoverArt'
+import { formatDateTime } from '../../utils/dateFns'
 
+let currentIndex = 0;
 
 export default function Chapter() {
     const { id, mangaId } = useLocalSearchParams();
@@ -28,19 +31,32 @@ export default function Chapter() {
     const [history = {}, setHistory] = useMMKVObject('history', storage)
 
     const [page, setPage] = useState(1);
-    let currentIndex = 0;
 
     const flatlistRef = useRef(null)
     const sliderRef = useRef(null);
 
     useFocusEffect(
         useCallback(() => {
-
             return () => {
-                // setHistory(prev => ({ ...prev, [manga?.id]: { ...prev[mangaId], [id]: { page } } }))
+                setHistory(prev => ({ ...prev, [mangaId || manga?.id]: { ...prev[mangaId || manga?.id], items: { ...prev[mangaId || manga?.id]?.items, [id]: { ...prev[mangaId || manga?.id]?.items[id], page: currentIndex + 1, time: formatDateTime(Date.now()) } } } }))
             };
         }, [])
     );
+
+    useEffect(() => {
+        if (manga?.id && chapterRelation) {
+            if (!history?.[mangaId || manga?.id]) {
+                setHistory(prev => ({ ...prev, [mangaId || manga?.id]: { title: getMangaTitle(manga), coverArt: getCoverArt(manga), items: { [id]: { title: getChapterTitle(chapterRelation.curr), page: 0 } } } }))
+            } else if (!history[mangaId || manga?.id].items?.[id]) {
+                setHistory(prev => ({ ...prev, [mangaId || manga?.id]: { ...prev[mangaId || manga?.id], items: { ...prev[mangaId || manga?.id].items, [id]: { title: getChapterTitle(chapterRelation.curr), page: 0 } } } }))
+            } else {
+                const page = history[mangaId || manga?.id].items?.[id].page
+                flatlistRef.current.scrollToIndex({ animated: false, index: parseInt(page - 1) })
+                sliderRef.current.setNativeProps({ value: parseInt(page) || 0 });
+                setPage(page)
+            }
+        }
+    }, [id, manga, chapterRelation])
 
 
     const tap = Gesture.Tap()
@@ -115,6 +131,7 @@ export default function Chapter() {
             <GestureDetector gesture={Gesture.Exclusive(tap)}>
                 <View style={{ flex: 1 }}>
                     <FlatList
+                        initialNumToRender={5}
                         viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
                         onViewableItemsChanged={onViewableItemsChanged}
                         onScrollBeginDrag={() => setShowDetail(false)}

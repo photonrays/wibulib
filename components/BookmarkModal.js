@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Dimensions, Image, Pressable, StatusBar, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, Pressable, ScrollView, StatusBar, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import Modal from "react-native-modal";
 import { NormalText } from './NormalText';
 import { COLORS } from '../constants';
@@ -43,6 +43,7 @@ export default function BookmarkModal({ type, isVisible, setIsVisible, id, cover
             [checked]: {
                 ...prev?.[checked],
                 items: {
+                    ...prev?.[checked].items,
                     [id]: {
                         title,
                         coverArt,
@@ -61,6 +62,7 @@ export default function BookmarkModal({ type, isVisible, setIsVisible, id, cover
             [checked]: {
                 ...libraryCopy?.[checked],
                 items: {
+                    ...libraryCopy?.[checked].items,
                     [id]: {
                         title,
                         coverArt,
@@ -68,6 +70,13 @@ export default function BookmarkModal({ type, isVisible, setIsVisible, id, cover
                 },
             },
         })
+    }
+
+    const removeBookmark = () => {
+        const libraryCopy = { ...library }
+        delete libraryCopy[previousId].items[id]
+
+        setLibrary(libraryCopy)
     }
 
     return (
@@ -78,7 +87,7 @@ export default function BookmarkModal({ type, isVisible, setIsVisible, id, cover
             animationIn={'slideInLeft'}
             animationOut={'slideOutLeft'}
         >
-            <View style={{ flex: 1, padding: 15, gap: 20 }}>
+            <ScrollView contentContainerStyle={{ padding: 15, gap: 10 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                     <BoldText style={{ fontSize: 20, }}>{type == 'add' ? 'Add To Library' : 'Edit Bookmark'}</BoldText>
                     <TouchableOpacity style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center', borderRadius: 5 }} onPress={() => setIsVisible(false)}>
@@ -110,7 +119,7 @@ export default function BookmarkModal({ type, isVisible, setIsVisible, id, cover
                                                     onChangeText={newText => setLibrary(prev => ({
                                                         ...prev,
                                                         [key]: {
-                                                            ...prev?.[checked],
+                                                            ...prev?.[key],
                                                             name: newText
                                                         },
                                                     }))}
@@ -147,20 +156,30 @@ export default function BookmarkModal({ type, isVisible, setIsVisible, id, cover
                     style={({ pressed }) => [styles.button, { backgroundColor: COLORS.primary, opacity: pressed ? 0.7 : 1 }]}>
                     <BoldText style={{ fontSize: 16 }}>{type == 'add' ? 'Add' : 'Update'}</BoldText>
                 </Pressable>
-                    : <Pressable
-                        onPress={() => {
-                            updateBookmark()
-                            setIsVisible(false)
-                        }}
-                        style={({ pressed }) => [styles.button, { backgroundColor: COLORS.primary, opacity: pressed ? 0.7 : 1 }]}>
-                        <BoldText style={{ fontSize: 16 }}>{type == 'add' ? 'Add' : 'Update'}</BoldText>
-                    </Pressable>}
+                    : <View style={{ gap: 10 }}>
+                        <Pressable
+                            onPress={() => {
+                                updateBookmark()
+                                setIsVisible(false)
+                            }}
+                            style={({ pressed }) => [styles.button, { backgroundColor: COLORS.primary, opacity: pressed ? 0.7 : 1 }]}>
+                            <BoldText style={{ fontSize: 16 }}>{type == 'add' ? 'Add' : 'Update'}</BoldText>
+                        </Pressable>
+                        <Pressable
+                            onPress={() => {
+                                removeBookmark()
+                                setIsVisible(false)
+                            }}
+                            style={({ pressed }) => [styles.button, { backgroundColor: 'red', opacity: pressed ? 0.7 : 1 }]}>
+                            <BoldText style={{ fontSize: 16 }}>Remove</BoldText>
+                        </Pressable>
+                    </View>}
                 <Pressable
                     onPress={() => setIsVisible(false)}
                     style={({ pressed }) => [styles.button, { opacity: pressed ? 0.7 : 1 }]}>
                     <BoldText style={{ fontSize: 16 }}>Cancel</BoldText>
                 </Pressable>
-            </View>
+            </ScrollView>
         </Modal>
     );
 }

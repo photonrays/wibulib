@@ -3,15 +3,17 @@ import { GestureDetector, Gesture, FlatList } from 'react-native-gesture-handler
 import { runOnJS } from 'react-native-reanimated'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { COLORS } from '../../constants'
-import { Stack, router, useLocalSearchParams } from 'expo-router'
+import { Stack, router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import useChapterPages from '../../hooks/useChapterPages'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Feather, AntDesign } from '@expo/vector-icons';
 import { BoldText, ChapterImage, NormalText, SemiBoldText } from '../../components'
 import { useManga } from '../../contexts/useManga'
 import { getMangaTitle } from '../../utils/getMangaTitle'
 import getChapterTitle from '../../utils/getChapterTitle'
 import Slider from '@react-native-community/slider';
+import { useMMKVObject } from 'react-native-mmkv'
+import { storage } from '../../store/MMKV'
 
 
 export default function Chapter() {
@@ -20,14 +22,25 @@ export default function Chapter() {
     const width = Dimensions.get('window').width
     const height = Dimensions.get('screen').height
     const [showDetail, setShowDetail] = useState(false)
-    const { manga, mangaFeed, updateManga, updateMangaByChapterId, clearManga } = useManga();
+    const { manga, mangaFeed, updateManga } = useManga();
     const [chapterRelation, setChapterRelation] = useState(null)
+
+    const [history = {}, setHistory] = useMMKVObject('history', storage)
 
     const [page, setPage] = useState(1);
     let currentIndex = 0;
 
     const flatlistRef = useRef(null)
     const sliderRef = useRef(null);
+
+    useFocusEffect(
+        useCallback(() => {
+
+            return () => {
+                // setHistory(prev => ({ ...prev, [manga?.id]: { ...prev[mangaId], [id]: { page } } }))
+            };
+        }, [])
+    );
 
 
     const tap = Gesture.Tap()

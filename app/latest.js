@@ -5,7 +5,7 @@ import { FontAwesome6, Ionicons, Octicons, Feather, AntDesign } from '@expo/vect
 import { useCallback, useEffect, useState } from 'react';
 import { BoldText, NormalText } from '../components';
 import { useManga } from '../contexts/useManga';
-import LatestUpdateCard2 from '../components/LatestUpdateCard2';
+import { DetailCard2 } from '../components';
 import Pagination from '../components/Pagination';
 import useLatestChapters from '../hooks/useLatestChapters';
 
@@ -52,7 +52,7 @@ export default function latest() {
                     Object.entries(latestUpdates)
                         .map(([mangaId, { manga, chapterList }]) => {
                             return (
-                                <LatestUpdateCard2 key={mangaId} manga={manga} chapterList={chapterList} />
+                                <DetailCard2 key={mangaId} manga={manga} chapterList={chapterList} />
                             );
                         })
                 )}

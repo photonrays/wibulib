@@ -5,8 +5,8 @@ import { BoldText } from "./BoldText";
 import PopularCard from "./PopularCard"
 import Card from "./Card"
 import Card2 from "./Card2"
-import LatestUpdateCard from "./LatestUpdateCard"
-import LatestUpdateCard2 from "./LatestUpdateCard2"
+import DetailCard from "./DetailCard"
+import DetailCard2 from "./DetailCard2"
 import ChapterImage from "./ChapterImage"
 import SearchBar from "./SearchBar"
 import SearchResult from "./SearchResult"
@@ -20,8 +20,8 @@ export {
     BoldText,
     SemiBoldText,
     PopularCard,
-    LatestUpdateCard,
-    LatestUpdateCard2,
+    DetailCard,
+    DetailCard2,
     Card,
     Card2,
     ChapterImage,

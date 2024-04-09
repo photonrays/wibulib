@@ -10,7 +10,7 @@ import { BoldText } from './BoldText'
 import { NormalText } from './NormalText'
 import { Vn, Gb } from "../assets/images"
 
-export default function LatestUpdateCard2({ manga, chapterList }) {
+export default function DetailCard2({ manga, chapterList }) {
     const width = Dimensions.get('window').width;
     const coverArt = getCoverArt(manga).toString()
     const title = getMangaTitle(manga)
@@ -36,7 +36,7 @@ export default function LatestUpdateCard2({ manga, chapterList }) {
     }
 
     return (
-        <Pressable style={{ marginBottom: 15, gap: 10, backgroundColor: COLORS.gray, padding: 8, borderRadius: 5 }}>
+        <Pressable onPress={() => router.navigate(`/manga/${manga?.id}`)} style={{ marginBottom: 15, gap: 10, backgroundColor: COLORS.gray, padding: 8, borderRadius: 5 }}>
             <View style={{ borderColor: 'rgba(128, 128, 128, 0.5)', borderBottomWidth: 1 }}>
                 <BoldText numberOfLines={1}>{title}</BoldText>
             </View>

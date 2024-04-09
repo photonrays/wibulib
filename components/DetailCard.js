@@ -8,34 +8,29 @@ import getChapterTitle from '../utils/getChapterTitle'
 import { formatNowDistance } from '../utils/dateFns'
 import { BoldText } from './BoldText'
 import { NormalText } from './NormalText'
-import { Vn, Gb } from "../assets/images"
 
-export default function LatestUpdateCard({ manga, chapterList }) {
+export default function DetailCard({ mangaId, chapterId, coverArt, mangaTitle, chapterTitle, translationGroup, date, containerStyle }) {
     const width = Dimensions.get('window').width;
-    const coverArt = getCoverArt(manga).toString()
-    const title = getMangaTitle(manga)
-    const chapterTitle = getChapterTitle(chapterList?.[0])
 
     return (
-        <Pressable onPress={() => router.push({ pathname: `./chapter/${chapterList?.[0].id}`, params: { mangaId: manga.id } })} style={{ marginBottom: 15 }}>
-            <View style={{ width: width - 30, height: 80, flexDirection: 'row', gap: 10 }}>
+        <Pressable onPress={() => router.push({ pathname: `./chapter/${chapterId}`, params: { mangaId } })} style={{ marginBottom: 15, ...containerStyle }}>
+            <View style={{ flex: 1, height: 80, flexDirection: 'row', gap: 10 }}>
                 <Image source={{ uri: coverArt }} style={styles.cover} />
                 <View style={{ flex: 1, maxHeight: 80, overflow: 'hidden', justifyContent: "space-between" }}>
                     <BoldText numberOfLines={1} style={{ fontSize: 16, lineHeight: 20 }}>
-                        {title}
+                        {mangaTitle}
                     </BoldText>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        {/* {chapterList?.[0].attributes?.translatedLanguage == 'en' ? <Gb width={24} height={24} /> : <Vn width={24} height={24} />} */}
                         <NormalText numberOfLines={1} style={{ fontSize: 14 }}>
                             {chapterTitle}
                         </NormalText>
                     </View>
                     <View style={{ flexDirection: 'row', gap: 10, justifyContent: 'space-between' }}>
-                        <NormalText numberOfLines={1} style={{ fontSize: 12, flex: 1, flexShrink: 1 }}>
-                            {chapterList[0].relationships?.[0].attributes?.name}
-                        </NormalText>
+                        {translationGroup && <NormalText numberOfLines={1} style={{ fontSize: 12, flex: 1, flexShrink: 1 }}>
+                            {translationGroup}
+                        </NormalText>}
                         <NormalText numberOfLines={1} style={{ fontSize: 12 }}>
-                            {formatNowDistance(new Date(chapterList[0].attributes?.readableAt)) || ""}
+                            {formatNowDistance(new Date(date)) || ""}
                         </NormalText>
                     </View>
                 </View>

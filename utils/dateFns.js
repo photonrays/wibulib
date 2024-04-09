@@ -6,5 +6,5 @@ export function formatNowDistance(date, options) {
 }
 
 export function formatDateTime(date, options) {
-    return format(date, "dd/MM/yyyy HH:mm", options)
+    return format(date, "dd/MM/yyyy", options)
 }

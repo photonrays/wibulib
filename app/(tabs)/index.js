@@ -1,8 +1,8 @@
-import { View, Text, StyleSheet, TouchableHighlight, Image, ScrollView, StatusBar, Pressable, Dimensions, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, StatusBar, Pressable, Dimensions, Animated } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { COLORS } from '../../constants'
-import { SectionTextHeader, PopularCard, LatestUpdateCard, Card, NormalText, BoldText, SearchBar } from '../../components';
+import { SectionTextHeader, PopularCard, DetailCard, Card, NormalText, BoldText, SearchBar } from '../../components';
 import { Stack, router, useFocusEffect } from 'expo-router';
 import useFeaturedTitles from '../../hooks/useFeatureTitles';
 import { useManga } from '../../contexts/useManga';
@@ -11,6 +11,9 @@ import useMangaRanking from '../../hooks/useMangaRanking';
 import useLatestChapters from '../../hooks/useLatestChapters';
 import { useMMKVObject } from 'react-native-mmkv';
 import { storage } from '../../store/MMKV';
+import getCoverArt from '../../utils/getCoverArt';
+import { getMangaTitle } from '../../utils/getMangaTitle';
+import getChapterTitle from '../../utils/getChapterTitle';
 
 
 export default function index() {
@@ -23,11 +26,6 @@ export default function index() {
     const { latestUpdates } = useLatestChapters(1)
     const win = Dimensions.get('window')
     const [history, setHistory] = useMMKVObject('history', storage)
-    console.log("history: ", history)
-
-    // useEffect(() => {
-    //     setHistory()
-    // }, [])
 
     const transparentValue = useSharedValue(0)
 
@@ -98,9 +96,10 @@ export default function index() {
                 <View style={{ marginBottom: 20, marginHorizontal: 15 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                         <SectionTextHeader style={{ marginBottom: 10 }}>Latest Updates</SectionTextHeader>
-                        <TouchableHighlight onPress={() => router.push("/latest")}>
+                        <Pressable onPress={() => router.push("/latest")}
+                            style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}>
                             <NormalText>View all</NormalText>
-                        </TouchableHighlight>
+                        </Pressable>
                     </View>
                     {Object.entries(latestUpdates).length < 1 ? (
                         <Text>Loading</Text>
@@ -109,7 +108,15 @@ export default function index() {
                             .slice(0, 6)
                             .map(([mangaId, { manga, chapterList }]) => {
                                 return (
-                                    <LatestUpdateCard key={mangaId} manga={manga} chapterList={chapterList} />
+                                    <DetailCard
+                                        key={mangaId}
+                                        chapterId={chapterList[0].id}
+                                        mangaId={manga?.id}
+                                        coverArt={getCoverArt(manga).toString()}
+                                        mangaTitle={getMangaTitle(manga)}
+                                        chapterTitle={getChapterTitle(chapterList?.[0])}
+                                        translationGroup={chapterList[0].relationships?.[0].attributes?.name}
+                                        date={chapterList[0].attributes?.readableAt} />
                                 );
                             })
                     )}
@@ -118,9 +125,9 @@ export default function index() {
                 <View style={{ marginBottom: 20, marginHorizontal: 15 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                         <SectionTextHeader style={{ marginBottom: 10 }}>Top Mangas</SectionTextHeader>
-                        <TouchableHighlight>
+                        <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}>
                             <NormalText>View All</NormalText>
-                        </TouchableHighlight>
+                        </Pressable>
                     </View>
                     {!topMangaIsLoading && topManga?.data && <FlatList
                         data={topManga.data}

@@ -38,7 +38,7 @@ export default function Chapter() {
     useFocusEffect(
         useCallback(() => {
             return () => {
-                setHistory(prev => ({ ...prev, [mangaId || manga?.id]: { ...prev[mangaId || manga?.id], items: { ...prev[mangaId || manga?.id]?.items, [id]: { ...prev[mangaId || manga?.id]?.items[id], page: currentIndex + 1, time: formatDateTime(Date.now()) } } } }))
+                setHistory(prev => ({ ...prev, [mangaId || manga?.id]: { ...prev[mangaId || manga?.id], items: { ...prev[mangaId || manga?.id]?.items, [id]: { ...prev[mangaId || manga?.id]?.items[id], page: currentIndex + 1, time: Date.now() } } } }))
             };
         }, [])
     );

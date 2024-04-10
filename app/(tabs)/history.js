@@ -82,17 +82,17 @@ export default function History() {
             </View>
             {Object.keys(sortedHistory).length !== 0 ? Object.entries(sortedHistory).map(([key, value], index) => {
                 return (
-                    <View key={index} style={{ width: width }}>
+                    <View key={index} style={{ width: width, marginBottom: 20 }}>
                         <SemiBoldText style={{ fontSize: 16, marginBottom: 10 }}>{key}</SemiBoldText>
                         {value?.map((v, idx) => {
                             return (
                                 <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
                                     <DetailCard
                                         chapterId={v.chapterId}
+                                        mangaId={v.mangaId}
                                         chapterTitle={v.title}
                                         coverArt={v.coverArt}
                                         date={v.time}
-                                        mangaId={v.mangaId}
                                         mangaTitle={v.mangaTitle}
                                         containerStyle={{ flex: 5 }}
                                     />
@@ -110,7 +110,7 @@ export default function History() {
                     </View>
                 )
             })
-                : <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: 60, backgroundColor: COLORS.gray }}>
+                : <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: 60, backgroundColor: COLORS.gray, marginBottom: 20 }}>
                     <BoldText style={{ fontSize: 16 }}>NO HISTORY</BoldText>
                 </View>
             }
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.black,
-        padding: 15
+        padding: 15,
     },
     modalContainer: {
         alignSelf: 'center',

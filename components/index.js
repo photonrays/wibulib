@@ -13,6 +13,7 @@ import SearchResult from "./SearchResult"
 import SearchFilter from "./SearchFilter";
 import Pagination from "./Pagination";
 import BookmarkModal from "./BookmarkModal";
+import Icon, { Icons } from "./Icon";
 
 export {
     SectionTextHeader,
@@ -29,5 +30,7 @@ export {
     SearchResult,
     SearchFilter,
     Pagination,
-    BookmarkModal
+    BookmarkModal,
+    Icon,
+    Icons
 };

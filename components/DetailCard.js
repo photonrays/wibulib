@@ -13,7 +13,7 @@ export default function DetailCard({ mangaId, chapterId, coverArt, mangaTitle, c
     const width = Dimensions.get('window').width;
 
     return (
-        <Pressable onPress={() => router.push({ pathname: `./chapter/${chapterId}`, params: { mangaId } })} style={{ marginBottom: 15, ...containerStyle }}>
+        <Pressable onPress={() => router.push({ pathname: `/chapter/${chapterId}`, params: { mangaId } })} style={{ marginBottom: 15, ...containerStyle }}>
             <View style={{ flex: 1, height: 80, flexDirection: 'row', gap: 10 }}>
                 <Image source={{ uri: coverArt }} style={styles.cover} />
                 <View style={{ flex: 1, maxHeight: 80, overflow: 'hidden', justifyContent: "space-between" }}>

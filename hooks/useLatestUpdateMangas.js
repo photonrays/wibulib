@@ -4,7 +4,7 @@ import { Includes, MangaContentRating } from '../api/static';
 import { useEffect } from 'react';
 
 
-export default function useLatestUpdateMangas({ latestChapters, chaptersLoading, chapterError, page }) {
+export default function useLatestUpdateMangas({ latestChapters, chaptersLoading, chapterError, page, mutate }) {
     const requestParams = {
         includes: [Includes.COVER_ART],
         ids: Object.keys(latestChapters),
@@ -24,5 +24,5 @@ export default function useLatestUpdateMangas({ latestChapters, chaptersLoading,
         }
     }
 
-    return { latestUpdates: updates, latestUpdatesLoading: isLoading }
+    return { latestUpdates: updates, latestUpdatesLoading: isLoading, mutateLatestChapter: mutate }
 }

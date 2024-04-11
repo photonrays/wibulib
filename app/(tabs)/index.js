@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, StatusBar, Pressable, Dimensions, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, StatusBar, Pressable, Dimensions, Animated, RefreshControl } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { COLORS } from '../../constants'
@@ -9,8 +9,6 @@ import { useManga } from '../../contexts/useManga';
 import ReaAnimated, { interpolateColor, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import useMangaRanking from '../../hooks/useMangaRanking';
 import useLatestChapters from '../../hooks/useLatestChapters';
-import { useMMKVObject } from 'react-native-mmkv';
-import { storage } from '../../store/MMKV';
 import getCoverArt from '../../utils/getCoverArt';
 import { getMangaTitle } from '../../utils/getMangaTitle';
 import getChapterTitle from '../../utils/getChapterTitle';
@@ -18,14 +16,21 @@ import getChapterTitle from '../../utils/getChapterTitle';
 
 export default function index() {
     const [headerHeight, setHeaderHeight] = useState(0)
-    const { data: featuredTitles, isLoading, error } = useFeaturedTitles()
+    const { data: featuredTitles, isLoading } = useFeaturedTitles()
     const { data: topManga, isLoading: topMangaIsLoading } = useMangaRanking()
     const slideRef = useRef(null)
     const scrollX = useRef(new Animated.Value(0)).current
     const { clearManga } = useManga();
-    const { latestUpdates } = useLatestChapters(1)
+    const { latestUpdates, mutateLatestChapter } = useLatestChapters(1)
     const win = Dimensions.get('window')
-    const [history, setHistory] = useMMKVObject('history', storage)
+    const [refreshing, setRefreshing] = useState(false);
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        mutateLatestChapter()
+            .then(setRefreshing(false))
+            .catch(err => console.log(err))
+    }, []);
 
     const transparentValue = useSharedValue(0)
 
@@ -68,6 +73,9 @@ export default function index() {
             <ScrollView style={styles.container}
                 onScroll={handleScroll}
                 scrollEventThrottle={16}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
             >
                 <StatusBar backgroundColor={'transparent'} />
                 <Stack.Screen options={{

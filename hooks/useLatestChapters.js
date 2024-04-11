@@ -14,7 +14,7 @@ export default function useLatestChapters(page) {
         contentRating: [MangaContentRating.SAFE, MangaContentRating.EROTICA, MangaContentRating.SUGGESTIVE, MangaContentRating.PORNOGRAPHIC],
         translatedLanguage: ['vi']
     };
-    const { data, isLoading, error } = useSWR(['lastestChapter', page, date.getMinutes()], () => getChapter(requestParams))
+    const { data, isLoading, error, mutate } = useSWR(['lastestChapter', page, date.getMinutes()], () => getChapter(requestParams))
     const successData = data && data.data.result === "ok" && (data.data)
     const latestChapters = {}
 
@@ -28,5 +28,5 @@ export default function useLatestChapters(page) {
         }
     }
 
-    return useLatestUpdateMangas({ latestChapters: latestChapters, chaptersLoading: isLoading, chapterError: error, page })
+    return useLatestUpdateMangas({ latestChapters: latestChapters, chaptersLoading: isLoading, chapterError: error, page, mutate })
 }

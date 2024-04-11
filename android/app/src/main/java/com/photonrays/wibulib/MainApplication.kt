@@ -1,4 +1,4 @@
-package com.anonymous.WibuLib
+package com.photonrays.wibulib
 
 import android.app.Application
 import android.content.res.Configuration

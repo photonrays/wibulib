@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "WibuLib",
-    "scheme": "WibuLib",
-    "slug": "WibuLib",
+    "name": "wibulib",
+    "scheme": "wibulib",
+    "slug": "wibulib",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -23,13 +23,23 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.WibuLib"
+      "package": "com.photonrays.wibulib",
+      "googleServicesFile": "./android/app/google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "72039806-4c58-446e-8ec2-73c75f10588f"
+      }
+    },
+    "owner": "photonrays"
   }
 }

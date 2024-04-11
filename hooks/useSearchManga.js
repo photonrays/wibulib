@@ -6,8 +6,8 @@ export default function useSearchManga(options) {
     if (!options.includes) {
         options.includes = [Includes.COVER_ART]
     }
-    const { data, error, isLoading } = useSWR(['search-manga', options], () => MangaApi.getSearchManga(options))
+    const { data, error, isLoading, mutate } = useSWR(['search-manga', options], () => MangaApi.getSearchManga(options))
     const successData = data && data.data.result === "ok" && (data.data)
 
-    return { data: successData, error, isLoading }
+    return { data: successData, error, isLoading, mutate }
 }

@@ -1,4 +1,4 @@
-import { Dimensions, Pressable, ScrollView, StatusBar, StyleSheet, Text, TouchableHighlight, View } from 'react-native'
+import { Dimensions, Pressable, RefreshControl, ScrollView, StatusBar, StyleSheet, Text, TouchableHighlight, View } from 'react-native'
 import { COLORS } from '../constants'
 import { Stack, router, useFocusEffect } from 'expo-router'
 import { FontAwesome6, Ionicons, Octicons, Feather, AntDesign } from '@expo/vector-icons';
@@ -14,9 +14,17 @@ const totalPage = 15
 export default function latest() {
     const [currentPage, setCurrentPage] = useState(1)
     const [pageRange, setPageRange] = useState([1])
+    const [refreshing, setRefreshing] = useState(false);
     const { clearManga } = useManga();
-    const { latestUpdates } = useLatestChapters(currentPage)
+    const { latestUpdates, mutateLatestChapter } = useLatestChapters(currentPage)
     const width = Dimensions.get('window').width
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        mutateLatestChapter()
+            .then(setRefreshing(false))
+            .catch(err => console.log(err))
+    }, []);
 
     useFocusEffect(
         useCallback(() => {
@@ -33,7 +41,10 @@ export default function latest() {
     }, [currentPage]);
 
     return (
-        <ScrollView style={{ flex: 1, backgroundColor: COLORS.black, padding: 15 }}>
+        <ScrollView style={{ flex: 1, backgroundColor: COLORS.black, padding: 15 }}
+            refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }>
             <Stack.Screen options={{
                 headerShown: false
             }} />

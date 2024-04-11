@@ -11,56 +11,58 @@ import { addDays, format } from 'date-fns';
 
 export default function History() {
     const width = Dimensions.get('window').width
-    const [history = {}, setHistory] = useMMKVObject('history', storage)
+    const [history, setHistory] = useMMKVObject('history', storage)
     const [sortedHistory, setSortedHistory] = useState({});
 
     useEffect(() => {
-        const today = new Date();
+        if (history) {
+            const today = new Date();
 
-        const latestChapters = Object.entries(history)
-            .map(([mangaId, mangaInfo]) => {
-                // Skip mangas with no chapters
-                if (!mangaInfo.items || Object.keys(mangaInfo.items).length === 0) {
-                    return null;
-                }
-
-                const chapters = Object.entries(mangaInfo.items);
-
-                // Find the latest read chapter by max timestamp
-                const latestChapter = chapters.reduce((maxChapter, [chapterId, chapterData]) => {
-                    if (chapterData.time > maxChapter.time) {
-                        return { ...chapterData, chapterId }
+            const latestChapters = Object.entries(history)
+                .map(([mangaId, mangaInfo]) => {
+                    // Skip mangas with no chapters
+                    if (!mangaInfo.items || Object.keys(mangaInfo.items).length === 0) {
+                        return null;
                     }
-                    return maxChapter
-                }, { time: 0 }
-                );
 
-                return {
-                    ...latestChapter,
-                    mangaId: mangaId,
-                    mangaTitle: mangaInfo.title,
-                    coverArt: mangaInfo.coverArt,
-                    dateString: format(new Date(latestChapter.time), "dd/MM/yyyy"),
-                };
-            })
-            .filter((chapter) => chapter && chapter.time); // Filter out missing chapters and chapters with missing time
+                    const chapters = Object.entries(mangaInfo.items);
 
-        // Sort chapters by date (descending - newest first)
-        const sortedChapters = latestChapters.sort((a, b) => new Date(b.time) - new Date(a.time));
+                    // Find the latest read chapter by max timestamp
+                    const latestChapter = chapters.reduce((maxChapter, [chapterId, chapterData]) => {
+                        if (chapterData.time > maxChapter.time) {
+                            return { ...chapterData, chapterId }
+                        }
+                        return maxChapter
+                    }, { time: 0 }
+                    );
 
-        const groupedHistory = sortedChapters.reduce((acc, chapter) => {
-            const formattedDateString = chapter.dateString === format(today, "dd/MM/yyyy")
-                ? 'Today'
-                : chapter.dateString === format(addDays(today, -1), "dd/MM/yyyy")
-                    ? 'Yesterday'
-                    : chapter.dateString;
+                    return {
+                        ...latestChapter,
+                        mangaId: mangaId,
+                        mangaTitle: mangaInfo.title,
+                        coverArt: mangaInfo.coverArt,
+                        dateString: format(new Date(latestChapter.time), "dd/MM/yyyy"),
+                    };
+                })
+                .filter((chapter) => chapter && chapter.time); // Filter out missing chapters and chapters with missing time
 
-            acc[formattedDateString] = acc[formattedDateString] || [];
-            acc[formattedDateString].push(chapter);
-            return acc;
-        }, {});
+            // Sort chapters by date (descending - newest first)
+            const sortedChapters = latestChapters.sort((a, b) => new Date(b.time) - new Date(a.time));
 
-        setSortedHistory(groupedHistory);
+            const groupedHistory = sortedChapters.reduce((acc, chapter) => {
+                const formattedDateString = chapter.dateString === format(today, "dd/MM/yyyy")
+                    ? 'Today'
+                    : chapter.dateString === format(addDays(today, -1), "dd/MM/yyyy")
+                        ? 'Yesterday'
+                        : chapter.dateString;
+
+                acc[formattedDateString] = acc[formattedDateString] || [];
+                acc[formattedDateString].push(chapter);
+                return acc;
+            }, {});
+
+            setSortedHistory(groupedHistory);
+        }
     }, [history]);
 
     return (
@@ -76,7 +78,7 @@ export default function History() {
                     <BoldText style={{ fontSize: 20 }}>HISTORY</BoldText>
                 </View>
                 <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
-                    onPress={() => setHistory({})}>
+                    onPress={() => setHistory()}>
                     <MaterialIcons name="delete-sweep" size={30} color={COLORS.white} />
                 </Pressable>
             </View>

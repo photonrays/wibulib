@@ -1,13 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { View, TextInput, Pressable, Dimensions, StatusBar, StyleSheet, Image } from 'react-native'
+import { View, TextInput, Pressable, Dimensions, StyleSheet } from 'react-native'
 import { FontAwesome6, Ionicons, AntDesign } from '@expo/vector-icons';
-import { COLORS, images } from '../constants';
+import { COLORS } from '../constants';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import useSearchManga from '../hooks/useSearchManga';
 import { getSearchManga } from '../api/manga';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import { NormalText } from './NormalText';
-import { SemiBoldText } from './SemiBoldText';
 import SearchResult from './SearchResult';
 import { ScrollView } from 'react-native-gesture-handler';
 

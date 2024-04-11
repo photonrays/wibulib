@@ -12,27 +12,14 @@ import { SelectDropdown } from '../../components/Dropdown';
 import { Modal, Portal, PaperProvider } from 'react-native-paper';
 
 
-export default function Library() {
+const EditCategoryModal = ({ visible, setVisible, library, setLibrary, selectedCategoryId, setSelectedCategoryId, dropDownRef }) => {
     const width = Dimensions.get('window').width
+    const height = Dimensions.get('window').height
 
-    const [library, setLibrary] = useMMKVObject('library', storage)
-    const [selectedCategoryId, setSelectedCategoryId] = useState(0)
-
-    const [visible, setVisible] = useState(false);
-    const dropDownRef = useRef(null)
-
-    const { clearManga } = useManga()
-
-    useFocusEffect(
-        useCallback(() => {
-            clearManga()
-        }, [])
-    );
-
-    const EditCategoryModal = () => {
-        return (
-            <Portal>
-                <Modal visible={visible} onDismiss={() => setVisible(false)} contentContainerStyle={[styles.modalContainer, { width: width * 0.9 }]}>
+    return (
+        <Portal>
+            <Modal visible={visible} onDismiss={() => setVisible(false)} contentContainerStyle={[styles.modalContainer, { width: width * 0.9 }]}>
+                <ScrollView style={{ maxHeight: height * 0.7 }}>
                     <SemiBoldText style={{ fontSize: 16, marginBottom: 10 }}>Edit Categories</SemiBoldText>
                     {Object.entries(library).map(([key, value], index) => {
                         return (
@@ -83,10 +70,28 @@ export default function Library() {
                             <BoldText style={{ fontSize: 16 }}>Cancel</BoldText>
                         </Pressable>
                     </View>
-                </Modal>
-            </Portal>
-        )
-    }
+                </ScrollView>
+            </Modal>
+        </Portal>
+    )
+}
+
+export default function Library() {
+    const width = Dimensions.get('window').width
+
+    const [library, setLibrary] = useMMKVObject('library', storage)
+    const [selectedCategoryId, setSelectedCategoryId] = useState(0)
+
+    const [visible, setVisible] = useState(false);
+    const dropDownRef = useRef(null)
+
+    const { clearManga } = useManga()
+
+    useFocusEffect(
+        useCallback(() => {
+            clearManga()
+        }, [])
+    );
 
 
     return (
@@ -95,7 +100,15 @@ export default function Library() {
                 <Stack.Screen options={{
                     headerShown: false
                 }} />
-                <EditCategoryModal />
+                <EditCategoryModal
+                    visible={visible}
+                    setVisible={setVisible}
+                    dropDownRef={dropDownRef}
+                    library={library}
+                    setLibrary={setLibrary}
+                    selectedCategoryId={selectedCategoryId}
+                    setSelectedCategoryId={setSelectedCategoryId}
+                />
                 <View style={[styles.detail, { width: width }]}>
                     <View style={{ paddingVertical: 15, paddingHorizontal: 5 }}>
                         <Ionicons name="library" size={24} color={COLORS.white} />
@@ -143,10 +156,13 @@ export default function Library() {
                         : (Object.keys(library[selectedCategoryId]?.items).length == 1 ? '1 Title'
                             : `${Object.keys(library[selectedCategoryId]?.items).length} Titles`)}
                 </SemiBoldText>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 30 }}>
+                {Object.keys(library[selectedCategoryId]?.items).length !== 0 ? <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 30 }}>
                     {Object.entries(library[selectedCategoryId]?.items).map(([key, value], index) =>
                         <Card2 key={index} id={key} cover={value.coverArt} title={value.title} />)}
                 </View>
+                    : <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: 60, backgroundColor: COLORS.gray, marginBottom: 20 }}>
+                        <BoldText style={{ fontSize: 16 }}>NO TITLES</BoldText>
+                    </View>}
             </ScrollView>
         </PaperProvider>
     );

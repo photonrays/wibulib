@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { Dimensions, Image, Pressable, ScrollView, StatusBar, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import Modal from "react-native-modal";
-import { NormalText } from './NormalText';
 import { COLORS } from '../constants';
 import { FontAwesome5, Ionicons, AntDesign, Feather, Entypo, FontAwesome } from '@expo/vector-icons';
 import { BoldText } from './BoldText';
-import { router } from 'expo-router'
 import { RadioButton } from 'react-native-paper';
-import { SemiBoldText } from './SemiBoldText';
 
 
 export default function BookmarkModal({ type, isVisible, setIsVisible, id, coverArt, title, library, setLibrary }) {
@@ -47,6 +44,7 @@ export default function BookmarkModal({ type, isVisible, setIsVisible, id, cover
                     [id]: {
                         title,
                         coverArt,
+                        createdAtSince: new Date().toISOString().slice(0, 19)
                     },
                 },
             },
@@ -54,22 +52,24 @@ export default function BookmarkModal({ type, isVisible, setIsVisible, id, cover
     }
 
     const updateBookmark = () => {
-        const libraryCopy = { ...library }
-        delete libraryCopy[previousId].items[id]
+        if (checked !== previousId) {
+            const libraryCopy = { ...library }
+            delete libraryCopy[previousId].items[id]
 
-        setLibrary({
-            ...libraryCopy,
-            [checked]: {
-                ...libraryCopy?.[checked],
-                items: {
-                    ...libraryCopy?.[checked].items,
-                    [id]: {
-                        title,
-                        coverArt,
+            setLibrary({
+                ...libraryCopy,
+                [checked]: {
+                    ...libraryCopy?.[checked],
+                    items: {
+                        ...libraryCopy?.[checked].items,
+                        [id]: {
+                            title,
+                            coverArt,
+                        },
                     },
                 },
-            },
-        })
+            })
+        }
     }
 
     const removeBookmark = () => {
@@ -97,7 +97,7 @@ export default function BookmarkModal({ type, isVisible, setIsVisible, id, cover
 
                 <View style={{ flexDirection: 'row', gap: 10 }}>
                     <Image source={{ uri: coverArt }} style={styles.cover} />
-                    <BoldText style={{ fontSize: 20 }}>{title}</BoldText>
+                    <BoldText numberOfLines={3} style={{ fontSize: 20, flex: 1 }}>{title}</BoldText>
                 </View>
 
                 <View style={{ gap: 10 }}>

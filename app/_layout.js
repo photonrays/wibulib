@@ -1,24 +1,43 @@
 import { Stack } from 'expo-router/stack';
-import { useFonts, Poppins_700Bold, Poppins_400Regular, Poppins_500Medium } from '@expo-google-fonts/poppins'
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { Poppins_700Bold, Poppins_400Regular, Poppins_500Medium } from '@expo-google-fonts/poppins'
+import { StyleSheet, Text, View } from 'react-native';
 import { MangaProvider } from '../contexts/useManga';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as BackgroundFetch from 'expo-background-fetch';
 import * as TaskManager from 'expo-task-manager';
-import { useEffect, useState } from 'react';
-import { getMangaIdFeed, getSearchManga } from '../api/manga';
+import * as Notifications from 'expo-notifications';
+import * as SplashScreen from 'expo-splash-screen';
+import * as Font from 'expo-font'
+import { useCallback, useEffect, useState } from 'react';
+import { getMangaIdFeed } from '../api/manga';
 import { storage } from '../store/MMKV';
 import { Includes, MangaContentRating, Order } from '../api/static';
+import usePushNotification from '../hooks/usePushNotifications';
 
 const BACKGROUND_FETCH_TASK = 'fetch-library-updates';
+
+async function schedulePushNotification(title, body) {
+    await Notifications.scheduleNotificationAsync({
+        content: {
+            title,
+            body: body.length === 1
+                ? `${body.length} new chapter!`
+                : `${body.length} new chapters!`,
+            data: {},
+        },
+        trigger: { seconds: 2 },
+    });
+}
 
 TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
     const library = storage.getString('library')
     const libraryJson = JSON.parse(library)
-    console.log(libraryJson);
 
     const ids = {}
-    Object.values(libraryJson).forEach((value) => Object.entries(value.items).forEach(([key, val]) => ids[key] = ({ ...val, createdAtSince: new Date(Date.now() - 24 * 3600 * 1000).toISOString().slice(0, 19) })))
+    Object.entries(libraryJson).forEach(([key, value]) => Object.entries(value.items).forEach(([k, val]) => {
+        ids[k] = ({ ...val, updatedAtSince: new Date(Date.now() - 24 * 3600 * 1000).toISOString().slice(0, 19) })
+        libraryJson[key].items[k].updatedAtSince = new Date().toISOString().slice(0, 19)
+    }))
 
     const requestParams = {
         limit: 500,
@@ -31,14 +50,14 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
     const updates = {}
 
     for (const id of Object.keys(ids)) {
-        const { data } = await getMangaIdFeed(id, { ...requestParams, createdAtSince: ids[id].createdAtSince })
+        const { data } = await getMangaIdFeed(id, { ...requestParams, updatedAtSince: ids[id].updatedAtSince })
         if (data && data.data && data.data.length !== 0) {
-            updates[id] = { ...ids[id], createdAtSince: new Date(Date.now()).toISOString().slice(0, 19), items: data.data }
+            updates[id] = { ...ids[id], updatedAtSince: new Date(Date.now()).toISOString().slice(0, 19), items: data.data }
+            await schedulePushNotification(ids[id].title, data.data);
         }
     }
 
     console.log("updates: ", updates)
-
     storage.set('updates', JSON.stringify(updates))
 
     return BackgroundFetch.BackgroundFetchResult.NewData;
@@ -46,82 +65,52 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
 
 async function registerBackgroundFetchAsync() {
     return BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
-        minimumInterval: 1 * 60, // task will fire 1 minute after app is backgrounded
+        minimumInterval: 5, // 5 second
         stopOnTerminate: false, // android only,
         startOnBoot: true, // android only
     });
 }
 
-async function unregisterBackgroundFetchAsync() {
-    return BackgroundFetch.unregisterTaskAsync(BACKGROUND_FETCH_TASK);
-}
 
 export default function AppLayout() {
-    const [isRegistered, setIsRegistered] = useState(false);
-    const [status, setStatus] = useState(null);
-
-    const checkStatusAsync = async () => {
-        const status = await BackgroundFetch.getStatusAsync();
-        const isRegistered = await TaskManager.isTaskRegisteredAsync(BACKGROUND_FETCH_TASK);
-        setStatus(status);
-        setIsRegistered(isRegistered);
-    };
-
-    const toggleFetchTask = async () => {
-        if (isRegistered) {
-            await unregisterBackgroundFetchAsync();
-        } else {
-            await registerBackgroundFetchAsync();
-        }
-
-        checkStatusAsync();
-    };
+    const [appIsReady, setAppIsReady] = useState(false);
+    const { } = usePushNotification()
 
     useEffect(() => {
-        const toggleFetch = async () => {
-            if (!isRegistered) {
-                await registerBackgroundFetchAsync();
+        (async () => {
+            try {
+                await SplashScreen.preventAutoHideAsync();
+                await Font.loadAsync({
+                    Poppins_400Regular,
+                    Poppins_700Bold,
+                    Poppins_500Medium,
+                });
+                registerBackgroundFetchAsync()
             }
-            checkStatusAsync()
-        }
-
-        toggleFetch()
+            catch (e) {
+                console.warn(e);
+            }
+            finally {
+                setAppIsReady(true);
+            }
+        })();
     }, []);
 
-    let [fontsLoaded] = useFonts({
-        Poppins_400Regular,
-        Poppins_700Bold,
-        Poppins_500Medium
-    });
+    const onLayoutRootView = useCallback(async () => {
+        if (appIsReady) {
+            await SplashScreen.hideAsync();
+        }
+    }, [appIsReady]);
 
-    if (!fontsLoaded) {
-        return <Text> Loading...</Text>;
+    if (!appIsReady) {
+        return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Text>Loading</Text>
+        </View>;
     }
 
     return (
-        <GestureHandlerRootView style={{ flex: 1 }}>
+        <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
             <MangaProvider>
-                <View style={styles.screen}>
-                    <View style={styles.textContainer}>
-                        <Text>
-                            Background fetch status:{' '}
-                            <Text style={styles.boldText}>
-                                {status && BackgroundFetch.BackgroundFetchStatus[status]}
-                            </Text>
-                        </Text>
-                        <Text>
-                            Background fetch task name:{' '}
-                            <Text style={styles.boldText}>
-                                {isRegistered ? BACKGROUND_FETCH_TASK : 'Not registered yet!'}
-                            </Text>
-                        </Text>
-                    </View>
-                    <View style={styles.textContainer}></View>
-                    <Button
-                        title={isRegistered ? 'Unregister BackgroundFetch task' : 'Register BackgroundFetch task'}
-                        onPress={toggleFetchTask}
-                    />
-                </View>
                 <Stack>
                     <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 </Stack>

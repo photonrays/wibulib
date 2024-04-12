@@ -40,6 +40,41 @@ export default function Updates() {
                     </View>
                     <BoldText style={{ fontSize: 20 }}>NEW UPDATES</BoldText>
                 </View>
+
+                {Object.entries(updates).map(([key, value], index) => {
+                    return (
+                        <View key={index} style={styles.categoryItem}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, flexShrink: 1 }}>
+                                <TextInput
+                                    value={value.name}
+                                    style={{ color: COLORS.white, flex: 1 }}
+                                    onChangeText={newText => setLibrary(prev => ({
+                                        ...prev,
+                                        [key]: {
+                                            ...prev?.[key],
+                                            name: newText
+                                        },
+                                    }))}
+                                    editable={key != 0}
+                                />
+                            </View>
+                            {key != 0 && <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
+                                <Pressable onPress={() => {
+                                    if (selectedCategoryId == key) {
+                                        setSelectedCategoryId(0)
+                                        dropDownRef.current.selectIndex(0)
+                                    }
+                                    setLibrary(prev => {
+                                        const { [key]: _, ...rest } = prev
+                                        return rest
+                                    })
+                                }}>
+                                    <Feather name="trash" size={24} color={COLORS.white} />
+                                </Pressable>
+                            </View>}
+                        </View>
+                    )
+                })}
             </ScrollView>
         </PaperProvider>
     );

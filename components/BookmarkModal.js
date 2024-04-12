@@ -44,7 +44,7 @@ export default function BookmarkModal({ type, isVisible, setIsVisible, id, cover
                     [id]: {
                         title,
                         coverArt,
-                        createdAtSince: new Date().toISOString().slice(0, 19)
+                        updatedAtSince: new Date().toISOString().slice(0, 19)
                     },
                 },
             },

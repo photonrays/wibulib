@@ -1,6 +1,6 @@
 import React from 'react'
 import { Dimensions, Image, ImageBackground, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native'
-import { COLORS, images } from '../constants'
+import { COLORS } from '../constants'
 import { Link, router } from 'expo-router';
 import { useHeaderHeight } from '@react-navigation/elements'
 import { LinearGradient } from 'expo-linear-gradient';
@@ -14,7 +14,6 @@ import { BoldText } from './BoldText';
 export default function PopularCard({ manga }) {
     const headerHeight = useHeaderHeight()
     const width = Dimensions.get('window').width;
-    const height = Dimensions.get('window').height;
     const coverArt = getCoverArt(manga)
     const mangaTitle = getMangaTitle(manga)
     const tags = manga.attributes.tags.filter((tag) => tag.attributes.group == 'genre')
@@ -37,7 +36,6 @@ export default function PopularCard({ manga }) {
                     </NormalText>
                 </View>
             </View>
-            {/* <View></View> */}
             <View style={{ paddingHorizontal: 15 }}>
                 <FlatList
                     horizontal

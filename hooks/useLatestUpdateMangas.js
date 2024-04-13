@@ -1,8 +1,6 @@
 import useSWR from 'swr'
 import { getSearchManga } from '../api/manga';
 import { Includes, MangaContentRating } from '../api/static';
-import { useEffect } from 'react';
-
 
 export default function useLatestUpdateMangas({ latestChapters, chaptersLoading, chapterError, page, mutate }) {
     const requestParams = {

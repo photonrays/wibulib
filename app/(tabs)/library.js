@@ -1,8 +1,8 @@
-import { View, Text, StyleSheet, StatusBar, ScrollView, Dimensions, Pressable, FlatList, TextInput } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, ScrollView, Dimensions, Pressable, TextInput } from 'react-native';
 import { COLORS } from '../../constants';
 import { BoldText, NormalText, SemiBoldText } from '../../components';
-import { FontAwesome6, Ionicons, Octicons, Feather, AntDesign, Entypo } from '@expo/vector-icons';
-import { Stack, router, useFocusEffect } from 'expo-router';
+import { Ionicons, Feather, AntDesign, Entypo } from '@expo/vector-icons';
+import { Stack, useFocusEffect } from 'expo-router';
 import { useMMKVObject } from 'react-native-mmkv';
 import { storage } from '../../store/MMKV';
 import { Card2 } from '../../components';
@@ -10,6 +10,7 @@ import { useCallback, useRef, useState } from 'react';
 import { useManga } from '../../contexts/useManga';
 import { SelectDropdown } from '../../components/Dropdown';
 import { Modal, Portal, PaperProvider } from 'react-native-paper';
+import isEmpty from '../../utils/isEmpty';
 
 
 const EditCategoryModal = ({ visible, setVisible, library, setLibrary, selectedCategoryId, setSelectedCategoryId, dropDownRef }) => {
@@ -152,11 +153,11 @@ export default function Library() {
                 </View>
 
                 <SemiBoldText style={{ fontSize: 16, marginBottom: 5 }}>
-                    {Object.keys(library[selectedCategoryId]?.items).length == 0 ? 'No Titles'
+                    {isEmpty(library[selectedCategoryId]?.items) ? 'No Titles'
                         : (Object.keys(library[selectedCategoryId]?.items).length == 1 ? '1 Title'
                             : `${Object.keys(library[selectedCategoryId]?.items).length} Titles`)}
                 </SemiBoldText>
-                {Object.keys(library[selectedCategoryId]?.items).length !== 0 ? <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 30 }}>
+                {!isEmpty(library[selectedCategoryId]?.items) ? <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 30 }}>
                     {Object.entries(library[selectedCategoryId]?.items).map(([key, value], index) =>
                         <Card2 key={index} id={key} cover={value.coverArt} title={value.title} />)}
                 </View>

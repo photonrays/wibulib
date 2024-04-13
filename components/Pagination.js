@@ -1,4 +1,3 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native';
 import { COLORS } from '../constants';
 import { AntDesign } from '@expo/vector-icons';

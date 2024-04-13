@@ -1,5 +1,5 @@
 import React from 'react'
-import { Dimensions, Image, Pressable, StyleSheet, View } from 'react-native'
+import { Dimensions, Image, Pressable, StyleSheet } from 'react-native'
 import getCoverArt from '../utils/getCoverArt'
 import { router } from 'expo-router'
 import { NormalText } from './NormalText'

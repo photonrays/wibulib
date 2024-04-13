@@ -1,8 +1,8 @@
 import React from 'react'
 import { Image, Pressable, StyleSheet, View } from 'react-native'
-import { COLORS, images } from '../constants'
+import { COLORS } from '../constants'
 import { SemiBoldText } from './SemiBoldText'
-import { Feather, FontAwesome, Ionicons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { NormalText } from './NormalText';
 import getCoverArt from '../utils/getCoverArt';
 import { getMangaTitle } from '../utils/getMangaTitle';

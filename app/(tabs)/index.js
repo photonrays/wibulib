@@ -1,6 +1,6 @@
-import { View, Text, StyleSheet, ScrollView, StatusBar, Pressable, Dimensions, Animated, RefreshControl } from 'react-native';
+import { View, StyleSheet, ScrollView, StatusBar, Pressable, Dimensions, Animated, RefreshControl, ActivityIndicator } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { COLORS } from '../../constants'
 import { SectionTextHeader, PopularCard, DetailCard, Card, NormalText, BoldText, SearchBar } from '../../components';
 import { Stack, router, useFocusEffect } from 'expo-router';
@@ -12,6 +12,7 @@ import useLatestChapters from '../../hooks/useLatestChapters';
 import getCoverArt from '../../utils/getCoverArt';
 import { getMangaTitle } from '../../utils/getMangaTitle';
 import getChapterTitle from '../../utils/getChapterTitle';
+import isEmpty from '../../utils/isEmpty';
 
 
 export default function index() {
@@ -87,19 +88,34 @@ export default function index() {
                             Popular New Titles
                         </SectionTextHeader>
                     </View>
-                    {!isLoading && featuredTitles?.data && <FlatList
-                        data={featuredTitles.data}
-                        keyExtractor={(obj) => obj.id}
-                        renderItem={(obj, index) => <PopularCard key={index} manga={obj.item} />}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        pagingEnabled
-                        bounces={false}
-                        onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], { useNativeDriver: false })}
-                        scrollEventThrottle={32}
-                        viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
-                        ref={slideRef}
-                    />}
+                    {!isLoading && featuredTitles?.data
+                        ? <FlatList
+                            data={featuredTitles.data}
+                            keyExtractor={(obj) => obj.id}
+                            renderItem={(obj, index) => <PopularCard key={index} manga={obj.item} />}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            pagingEnabled
+                            bounces={false}
+                            onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], { useNativeDriver: false })}
+                            scrollEventThrottle={32}
+                            viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
+                            ref={slideRef}
+                        />
+                        : <View style={{ width: win.width, paddingTop: StatusBar.currentHeight + 10 }} >
+                            <View style={{ height: 160, width: win.width, flexDirection: 'row', gap: 10, marginBottom: 10, marginTop: headerHeight, overflow: 'hidden', paddingHorizontal: 15 }}>
+                                <View style={{ width: 112, height: 160, backgroundColor: COLORS.gray2, borderRadius: 5 }} />
+                                <View style={{ flex: 1, maxHeight: 160, overflow: 'hidden', justifyContent: "space-between" }}>
+                                    <View style={{ height: 50, width: '100%', backgroundColor: COLORS.gray2 }} />
+                                    <View style={{ height: 30, width: '40%', backgroundColor: COLORS.gray2 }} />
+                                </View>
+                            </View>
+                            <View style={{ height: 30, width: '100%', flexDirection: 'row', gap: 10, paddingHorizontal: 15, marginBottom: 10 }}>
+                                <View style={{ height: 20, width: 70, backgroundColor: COLORS.gray2 }} />
+                                <View style={{ height: 20, width: 70, backgroundColor: COLORS.gray2 }} />
+                            </View>
+                        </View>
+                    }
                 </View>
                 <View style={{ marginBottom: 20, marginHorizontal: 15 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -109,8 +125,10 @@ export default function index() {
                             <NormalText>View all</NormalText>
                         </Pressable>
                     </View>
-                    {Object.entries(latestUpdates).length < 1 ? (
-                        <Text>Loading</Text>
+                    {isEmpty(latestUpdates) ? (
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                            <ActivityIndicator color={COLORS.primary} size={'large'} />
+                        </View>
                     ) : (
                         Object.entries(latestUpdates)
                             .slice(0, 6)
@@ -137,14 +155,19 @@ export default function index() {
                             <NormalText>View All</NormalText>
                         </Pressable>
                     </View>
-                    {!topMangaIsLoading && topManga?.data && <FlatList
-                        data={topManga.data}
-                        keyExtractor={(obj) => obj.id}
-                        renderItem={(obj, index) => <Card manga={obj.item} />}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        ItemSeparatorComponent={() => <View style={{ width: 14 }} />}
-                    />}
+                    {!topMangaIsLoading && topManga?.data
+                        ? <FlatList
+                            data={topManga.data}
+                            keyExtractor={(obj) => obj.id}
+                            renderItem={(obj) => <Card manga={obj.item} />}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            ItemSeparatorComponent={() => <View style={{ width: 14 }} />}
+                        />
+                        : <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                            <ActivityIndicator color={COLORS.primary} size={'large'} />
+                        </View>
+                    }
                 </View>
             </ScrollView>
         </View>

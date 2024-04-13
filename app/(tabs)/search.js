@@ -1,9 +1,9 @@
-import { View, Text, StyleSheet, StatusBar, ScrollView, Dimensions, TextInput, Pressable, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, StyleSheet, StatusBar, Dimensions, TextInput, Pressable, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
 import { COLORS } from '../../constants';
-import { BoldText, NormalText, SearchFilter, SearchResult } from '../../components';
+import { BoldText, SearchFilter, SearchResult } from '../../components';
 import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { FontAwesome6, Ionicons, Octicons, Feather, AntDesign } from '@expo/vector-icons';
+import { FontAwesome6, Ionicons, Feather } from '@expo/vector-icons';
 import { getMangaTag, getSearchManga } from '../../api/manga';
 import { useManga } from '../../contexts/useManga';
 import Card2 from '../../components/Card2';

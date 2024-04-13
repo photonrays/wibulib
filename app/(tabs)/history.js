@@ -2,11 +2,12 @@ import { View, StyleSheet, StatusBar, ScrollView, Dimensions, Pressable } from '
 import { COLORS } from '../../constants';
 import { BoldText, DetailCard, SemiBoldText } from '../../components';
 import { Octicons, Feather, MaterialIcons } from '@expo/vector-icons';
-import { Stack, router } from 'expo-router';
+import { Stack } from 'expo-router';
 import { useMMKVObject } from 'react-native-mmkv';
 import { storage } from '../../store/MMKV';
 import { useEffect, useState } from 'react';
 import { addDays, format } from 'date-fns';
+import isEmpty from '../../utils/isEmpty';
 
 
 export default function History() {
@@ -21,7 +22,7 @@ export default function History() {
             const latestChapters = Object.entries(history)
                 .map(([mangaId, mangaInfo]) => {
                     // Skip mangas with no chapters
-                    if (!mangaInfo.items || Object.keys(mangaInfo.items).length === 0) {
+                    if (!mangaInfo.items || isEmpty(mangaInfo.items)) {
                         return null;
                     }
 
@@ -82,7 +83,7 @@ export default function History() {
                     <MaterialIcons name="delete-sweep" size={30} color={COLORS.white} />
                 </Pressable>
             </View>
-            {Object.keys(sortedHistory).length !== 0 ? Object.entries(sortedHistory).map(([key, value], index) => {
+            {!isEmpty(sortedHistory) ? Object.entries(sortedHistory).map(([key, value], index) => {
                 return (
                     <View key={index} style={{ width: width, marginBottom: 20 }}>
                         <SemiBoldText style={{ fontSize: 16, marginBottom: 10 }}>{key}</SemiBoldText>

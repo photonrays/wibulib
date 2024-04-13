@@ -1,8 +1,8 @@
-import { View, Text, StyleSheet, Image, Pressable, ScrollView, ImageBackground, FlatList, Dimensions } from 'react-native';
-import { Link, Stack, router, useLocalSearchParams } from 'expo-router'
+import { View, Text, StyleSheet, Image, Pressable, ScrollView, ImageBackground, Dimensions } from 'react-native';
+import { Stack, router, useLocalSearchParams } from 'expo-router'
 import { useHeaderHeight } from '@react-navigation/elements'
-import { COLORS, images } from '../../constants';
-import { Ionicons, MaterialCommunityIcons, Feather, FontAwesome } from '@expo/vector-icons';
+import { COLORS } from '../../constants';
+import { Ionicons, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import Chapter from '../../components/Chapter';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useManga } from '../../contexts/useManga';

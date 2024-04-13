@@ -1,6 +1,5 @@
-import { View, Text } from 'react-native'
+import { View } from 'react-native'
 import { FontAwesome } from '@expo/vector-icons';
-import { COLORS } from '../constants';
 import getChapterTitle from '../utils/getChapterTitle';
 import { formatNowDistance } from '../utils/dateFns';
 import { Link } from 'expo-router';

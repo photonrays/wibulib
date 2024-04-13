@@ -1,13 +1,16 @@
-import { Dimensions, Pressable, RefreshControl, ScrollView, StatusBar, StyleSheet, Text, TouchableHighlight, View } from 'react-native'
+import { ActivityIndicator, Dimensions, Pressable, RefreshControl, ScrollView, StatusBar, StyleSheet, View } from 'react-native'
 import { COLORS } from '../constants'
 import { Stack, router, useFocusEffect } from 'expo-router'
-import { FontAwesome6, Ionicons, Octicons, Feather, AntDesign } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useCallback, useEffect, useState } from 'react';
 import { BoldText, NormalText } from '../components';
 import { useManga } from '../contexts/useManga';
 import { DetailCard2 } from '../components';
 import Pagination from '../components/Pagination';
 import useLatestChapters from '../hooks/useLatestChapters';
+import getCoverArt from '../utils/getCoverArt';
+import { getMangaTitle } from '../utils/getMangaTitle';
+import isEmpty from '../utils/isEmpty';
 
 const totalPage = 15
 
@@ -57,16 +60,22 @@ export default function latest() {
             </View>
 
             <View>
-                {Object.entries(latestUpdates).length < 1 ? (
-                    <Text>Loading</Text>
-                ) : (
-                    Object.entries(latestUpdates)
+                {isEmpty(latestUpdates)
+                    ? <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                        <ActivityIndicator color={COLORS.primary} size={'large'} />
+                    </View>
+                    : Object.entries(latestUpdates)
                         .map(([mangaId, { manga, chapterList }]) => {
                             return (
-                                <DetailCard2 key={mangaId} manga={manga} chapterList={chapterList} />
+                                <DetailCard2
+                                    key={mangaId}
+                                    mangaId={mangaId}
+                                    coverArt={getCoverArt(manga).toString()}
+                                    mangaTitle={getMangaTitle(manga)}
+                                    chapterList={chapterList} />
                             );
                         })
-                )}
+                }
             </View>
             <Pagination totalPage={totalPage} currentPage={currentPage} setCurrentPage={setCurrentPage} pageRange={pageRange} />
         </ScrollView>

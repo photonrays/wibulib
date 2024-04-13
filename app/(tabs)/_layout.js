@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Tabs } from 'expo-router';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { COLORS } from '../../constants';
 import { Icon, Icons, NormalText } from "../../components"
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';

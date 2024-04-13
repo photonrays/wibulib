@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react'
-import { Dimensions, Image, Pressable, ScrollView, StatusBar, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react'
+import { Dimensions, Image, Pressable, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import Modal from "react-native-modal";
 import { COLORS } from '../constants';
-import { FontAwesome5, Ionicons, AntDesign, Feather, Entypo, FontAwesome } from '@expo/vector-icons';
+import { Ionicons, Feather, Entypo } from '@expo/vector-icons';
 import { BoldText } from './BoldText';
 import { RadioButton } from 'react-native-paper';
 

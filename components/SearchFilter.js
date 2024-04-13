@@ -1,14 +1,12 @@
-import React, { useEffect, useState } from 'react'
-import { Dimensions, Pressable, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Modal from "react-native-modal";
 import { NormalText } from './NormalText';
 import { COLORS } from '../constants';
-import { FontAwesome6, Ionicons, AntDesign } from '@expo/vector-icons';
+import { Ionicons, AntDesign } from '@expo/vector-icons';
 import { MangaContentRating, MangaPublicationDemographic, MangaPublicationStatus, Order } from '../api/static';
 import { SelectDropdown } from './Dropdown'
 import { BoldText } from './BoldText';
 import { SemiBoldText } from './SemiBoldText';
-import { getMangaTag } from '../api/manga';
 import CustomDropdown from './CustomDropdown';
 
 const sortByData = [

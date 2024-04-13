@@ -1,6 +1,5 @@
-import { getMangaId, getMangaIdFeed, getSearchManga } from "../api/manga";
+import { getMangaId, getMangaIdFeed } from "../api/manga";
 import { createContext, useContext, useState, useEffect } from "react";
-import useLatestChapters from "../hooks/useLatestChapters";
 import { Includes, MangaContentRating, Order } from "../api/static";
 import { getChapterId } from "../api/chapter";
 

@@ -1,21 +1,24 @@
-import { View, Text, StyleSheet, StatusBar, ScrollView, Dimensions, Pressable, FlatList, TextInput } from 'react-native';
+import { View, StyleSheet, StatusBar, ScrollView, Dimensions, Pressable } from 'react-native';
 import { COLORS } from '../../constants';
-import { BoldText, NormalText, SemiBoldText } from '../../components';
-import { FontAwesome6, Ionicons, Octicons, Feather, AntDesign, Entypo } from '@expo/vector-icons';
-import { Stack, router, useFocusEffect } from 'expo-router';
+import { BoldText, DetailCard2, NormalText, SemiBoldText } from '../../components';
+import { Ionicons } from '@expo/vector-icons';
+import { Stack, useFocusEffect } from 'expo-router';
 import { useMMKVObject } from 'react-native-mmkv';
 import { storage } from '../../store/MMKV';
-import { Card2 } from '../../components';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback } from 'react';
 import { useManga } from '../../contexts/useManga';
-import { SelectDropdown } from '../../components/Dropdown';
-import { Modal, Portal, PaperProvider } from 'react-native-paper';
+import { PaperProvider } from 'react-native-paper';
+import isEmpty from '../../utils/isEmpty';
+import { format } from 'date-fns';
 
 
 export default function Updates() {
     const width = Dimensions.get('window').width
 
-    const [updates, setUpdates] = useMMKVObject('updates', storage)
+    const [updates = {}, setUpdates] = useMMKVObject('updates', storage)
+    const reset = () => {
+        setUpdates({})
+    }
 
     console.log("updates: ", updates)
 
@@ -40,41 +43,31 @@ export default function Updates() {
                     </View>
                     <BoldText style={{ fontSize: 20 }}>NEW UPDATES</BoldText>
                 </View>
+                <Pressable onPress={reset}>
+                    <NormalText>Reset</NormalText>
+                </Pressable>
 
-                {Object.entries(updates).map(([key, value], index) => {
-                    return (
-                        <View key={index} style={styles.categoryItem}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, flexShrink: 1 }}>
-                                <TextInput
-                                    value={value.name}
-                                    style={{ color: COLORS.white, flex: 1 }}
-                                    onChangeText={newText => setLibrary(prev => ({
-                                        ...prev,
-                                        [key]: {
-                                            ...prev?.[key],
-                                            name: newText
-                                        },
-                                    }))}
-                                    editable={key != 0}
-                                />
+                {isEmpty(updates)
+                    ? <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: 60, backgroundColor: COLORS.gray, marginBottom: 20 }}>
+                        <BoldText style={{ fontSize: 16 }}>NO UPDATES</BoldText>
+                    </View>
+                    : Object.entries(updates).map(([key, value], index) => {
+                        return (
+                            <View key={index} style={{ width: width, marginBottom: 20 }}>
+                                <SemiBoldText style={{ fontSize: 16, marginBottom: 10 }}>{format(Date(key), "dd/MM/yyyy")}</SemiBoldText>
+                                {Object.entries(value).map(([id, v], idx) => {
+                                    return (
+                                        <DetailCard2
+                                            key={idx}
+                                            chapterList={v.items}
+                                            coverArt={v.coverArt}
+                                            mangaId={id}
+                                            mangaTitle={v.title} />
+                                    )
+                                })}
                             </View>
-                            {key != 0 && <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
-                                <Pressable onPress={() => {
-                                    if (selectedCategoryId == key) {
-                                        setSelectedCategoryId(0)
-                                        dropDownRef.current.selectIndex(0)
-                                    }
-                                    setLibrary(prev => {
-                                        const { [key]: _, ...rest } = prev
-                                        return rest
-                                    })
-                                }}>
-                                    <Feather name="trash" size={24} color={COLORS.white} />
-                                </Pressable>
-                            </View>}
-                        </View>
-                    )
-                })}
+                        )
+                    })}
             </ScrollView>
         </PaperProvider>
     );

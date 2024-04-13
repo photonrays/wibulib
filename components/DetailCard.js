@@ -1,17 +1,12 @@
 import React from 'react'
-import { Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Image, Pressable, StyleSheet, View } from 'react-native'
 import { COLORS } from '../constants'
-import getCoverArt from '../utils/getCoverArt'
-import { Link, router } from 'expo-router'
-import { getMangaTitle } from '../utils/getMangaTitle'
-import getChapterTitle from '../utils/getChapterTitle'
+import { router } from 'expo-router'
 import { formatNowDistance } from '../utils/dateFns'
 import { BoldText } from './BoldText'
 import { NormalText } from './NormalText'
 
 export default function DetailCard({ mangaId, chapterId, coverArt, mangaTitle, chapterTitle, translationGroup, date, containerStyle }) {
-    const width = Dimensions.get('window').width;
-
     return (
         <Pressable onPress={() => router.push({ pathname: `/chapter/${chapterId}`, params: { mangaId } })} style={{ marginBottom: 15, ...containerStyle }}>
             <View style={{ flex: 1, height: 80, flexDirection: 'row', gap: 10 }}>

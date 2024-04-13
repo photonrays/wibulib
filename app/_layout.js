@@ -13,6 +13,8 @@ import { getMangaIdFeed } from '../api/manga';
 import { storage } from '../store/MMKV';
 import { Includes, MangaContentRating, Order } from '../api/static';
 import usePushNotification from '../hooks/usePushNotifications';
+import isEmpty from '../utils/isEmpty';
+import { COLORS } from '../constants';
 
 const BACKGROUND_FETCH_TASK = 'fetch-library-updates';
 
@@ -20,9 +22,7 @@ async function schedulePushNotification(title, body) {
     await Notifications.scheduleNotificationAsync({
         content: {
             title,
-            body: body.length === 1
-                ? `${body.length} new chapter!`
-                : `${body.length} new chapters!`,
+            body,
             data: {},
         },
         trigger: { seconds: 2 },
@@ -35,9 +35,12 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
 
     const ids = {}
     Object.entries(libraryJson).forEach(([key, value]) => Object.entries(value.items).forEach(([k, val]) => {
-        ids[k] = ({ ...val, updatedAtSince: new Date(Date.now() - 24 * 3600 * 1000).toISOString().slice(0, 19) })
+        ids[k] = ({ ...val, updatedAtSince: val.updatedAtSince || new Date(Date.now() - 24 * 3600 * 1000).toISOString().slice(0, 19) })
         libraryJson[key].items[k].updatedAtSince = new Date().toISOString().slice(0, 19)
     }))
+
+    console.log("libraryJson: ", libraryJson)
+    storage.set('library', JSON.stringify(libraryJson))
 
     const requestParams = {
         limit: 500,
@@ -46,26 +49,35 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
         contentRating: [MangaContentRating.SAFE, MangaContentRating.EROTICA, MangaContentRating.SUGGESTIVE, MangaContentRating.PORNOGRAPHIC],
         translatedLanguage: ['vi']
     };
+    const updates = storage.getString('updates')
+    const updatesJson = updates ? JSON.parse(updates) : {}
+    const updateData = {}
 
-    const updates = {}
-
+    await schedulePushNotification("Fetching new updates", "fetching...");
     for (const id of Object.keys(ids)) {
         const { data } = await getMangaIdFeed(id, { ...requestParams, updatedAtSince: ids[id].updatedAtSince })
         if (data && data.data && data.data.length !== 0) {
-            updates[id] = { ...ids[id], updatedAtSince: new Date(Date.now()).toISOString().slice(0, 19), items: data.data }
-            await schedulePushNotification(ids[id].title, data.data);
+            updateData[id] = { ...ids[id], items: data.data }
+            const body = data.data.length === 1
+                ? `${data.data.length} new chapter!`
+                : `${data.data.length} new chapters!`
+            await schedulePushNotification(ids[id].title, body);
         }
     }
 
-    console.log("updates: ", updates)
-    storage.set('updates', JSON.stringify(updates))
+    if (!isEmpty(updateData)) {
+        updatesJson[Date.now()] = updateData
+    }
+
+    console.log("updatesJson: ", updatesJson)
+    storage.set('updates', JSON.stringify(updatesJson))
 
     return BackgroundFetch.BackgroundFetchResult.NewData;
 });
 
 async function registerBackgroundFetchAsync() {
     return BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
-        minimumInterval: 5, // 5 second
+        minimumInterval: 24 * 60 * 60, // 1 day
         stopOnTerminate: false, // android only,
         startOnBoot: true, // android only
     });
@@ -103,7 +115,7 @@ export default function AppLayout() {
     }, [appIsReady]);
 
     if (!appIsReady) {
-        return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.black }}>
             <Text>Loading</Text>
         </View>;
     }

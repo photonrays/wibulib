@@ -1,7 +1,6 @@
-import { Image, ScrollView, Text, View, Dimensions, Pressable, StyleSheet, SafeAreaView, StatusBar } from 'react-native'
+import { View, Dimensions, Pressable, StyleSheet, StatusBar, ActivityIndicator } from 'react-native'
 import { GestureDetector, Gesture, FlatList } from 'react-native-gesture-handler'
 import { runOnJS } from 'react-native-reanimated'
-import { useHeaderHeight } from '@react-navigation/elements'
 import { COLORS } from '../../constants'
 import { Stack, router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import useChapterPages from '../../hooks/useChapterPages'
@@ -15,15 +14,13 @@ import Slider from '@react-native-community/slider';
 import { useMMKVObject } from 'react-native-mmkv'
 import { storage } from '../../store/MMKV'
 import getCoverArt from '../../utils/getCoverArt'
-import { formatDateTime } from '../../utils/dateFns'
 
 let currentIndex = 0;
 
 export default function Chapter() {
     const { id, mangaId } = useLocalSearchParams();
-    const { pages, isLoading } = useChapterPages(id)
+    const { pages } = useChapterPages(id)
     const width = Dimensions.get('window').width
-    const height = Dimensions.get('screen').height
     const [showDetail, setShowDetail] = useState(false)
     const { manga, mangaFeed, updateManga } = useManga();
     const [chapterRelation, setChapterRelation] = useState(null)
@@ -107,11 +104,13 @@ export default function Chapter() {
 
     if (!chapterRelation) {
         return (
-            <View style={styles.container}>
+            <View style={{
+                flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.black
+            }}>
                 <Stack.Screen options={{
                     headerShown: false
                 }} />
-                <BoldText>Loading</BoldText>
+                <ActivityIndicator color={COLORS.primary} size={'large'} />
             </View>)
     }
 
@@ -131,6 +130,9 @@ export default function Chapter() {
             <GestureDetector gesture={Gesture.Exclusive(tap)}>
                 <View style={{ flex: 1 }}>
                     <FlatList
+                        maximumZoomScale={2.5}
+                        minimumZoomScale={1.0}
+                        pinchGestureEnabled={true}
                         initialNumToRender={5}
                         viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
                         onViewableItemsChanged={onViewableItemsChanged}

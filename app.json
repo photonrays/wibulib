@@ -24,7 +24,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.photonrays.wibulib",
-      "googleServicesFile": "./android/app/google-services.json"
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"

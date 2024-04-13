@@ -1,6 +1,6 @@
 import { View, Dimensions, Pressable, StyleSheet, StatusBar, ActivityIndicator } from 'react-native'
 import { GestureDetector, Gesture, FlatList } from 'react-native-gesture-handler'
-import { runOnJS } from 'react-native-reanimated'
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
 import { COLORS } from '../../constants'
 import { Stack, router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import useChapterPages from '../../hooks/useChapterPages'
@@ -14,6 +14,7 @@ import Slider from '@react-native-community/slider';
 import { useMMKVObject } from 'react-native-mmkv'
 import { storage } from '../../store/MMKV'
 import getCoverArt from '../../utils/getCoverArt'
+import Zoom from 'react-native-zoom-reanimated'
 
 let currentIndex = 0;
 
@@ -48,16 +49,17 @@ export default function Chapter() {
                 setHistory(prev => ({ ...prev, [mangaId || manga?.id]: { ...prev[mangaId || manga?.id], items: { ...prev[mangaId || manga?.id].items, [id]: { title: getChapterTitle(chapterRelation.curr), page: 0 } } } }))
             } else {
                 const page = history[mangaId || manga?.id].items?.[id].page
-                flatlistRef.current.scrollToIndex({ animated: false, index: parseInt(page - 1) })
+                flatlistRef.current.scrollToIndex({ animated: false, index: page == 0 ? parseInt(page - 1) : 0 })
                 sliderRef.current.setNativeProps({ value: parseInt(page) || 0 });
                 setPage(page)
             }
         }
     }, [id, manga, chapterRelation])
 
-
     const tap = Gesture.Tap()
+        .maxDuration(250)
         .maxDistance(50)
+        .numberOfTaps(1)
         .onStart(() => {
             runOnJS(setShowDetail)(!showDetail)
         });
@@ -128,11 +130,8 @@ export default function Chapter() {
                 </Pressable>
             </View>
             <GestureDetector gesture={Gesture.Exclusive(tap)}>
-                <View style={{ flex: 1 }}>
+                <Zoom style={{ flex: 1 }}>
                     <FlatList
-                        maximumZoomScale={2.5}
-                        minimumZoomScale={1.0}
-                        pinchGestureEnabled={true}
                         initialNumToRender={5}
                         viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
                         onViewableItemsChanged={onViewableItemsChanged}
@@ -175,7 +174,7 @@ export default function Chapter() {
                             </View>
                         </View>)}
                     />
-                </View>
+                </Zoom>
             </GestureDetector>
             <View style={[styles.detail, { bottom: 10, width: width, display: showDetail ? 'flex' : 'none' }]}>
                 <Pressable

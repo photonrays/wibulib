@@ -18,7 +18,7 @@ export default function usePushNotification() {
     const responseListener = useRef();
 
     useEffect(() => {
-        registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+        registerForPushNotificationsAsync();
 
         notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
             setNotification(notification);
@@ -53,7 +53,7 @@ async function schedulePushNotification() {
 }
 
 async function registerForPushNotificationsAsync() {
-    let token;
+    // let token;
 
     if (Platform.OS === 'android') {
         await Notifications.setNotificationChannelAsync('default', {
@@ -75,11 +75,11 @@ async function registerForPushNotificationsAsync() {
             alert('Failed to get push token for push notification!');
             return;
         }
-        token = (await Notifications.getExpoPushTokenAsync({ projectId: '72039806-4c58-446e-8ec2-73c75f10588f' })).data;
-        console.log(token);
+        // token = (await Notifications.getExpoPushTokenAsync({ projectId: '72039806-4c58-446e-8ec2-73c75f10588f' })).data;
+        // console.log(token);
     } else {
         alert('Must use physical device for Push Notifications');
     }
 
-    return token;
+    return;
 }

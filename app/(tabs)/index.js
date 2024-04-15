@@ -39,7 +39,7 @@ export default function index() {
         const offset = event.nativeEvent.contentOffset.y
         if (offset < (headerHeight)) {
             transparentValue.value = Math.min(offset / headerHeight, 1)
-        } else if (transparentValue !== 1) {
+        } else if (transparentValue.value !== 1) {
             transparentValue.value = 1
         }
     }

@@ -40,7 +40,7 @@ export function MangaProvider({ children }) {
                 includes: [Includes.SCANLATION_GROUP, Includes.USER],
                 order: { volume: Order.DESC, chapter: Order.DESC },
                 contentRating: [MangaContentRating.SAFE, MangaContentRating.EROTICA, MangaContentRating.SUGGESTIVE, MangaContentRating.PORNOGRAPHIC],
-                translatedLanguage: ['vi']
+                translatedLanguage: ['en']
             };
             const { data } = await getMangaIdFeed(id, requestParams)
             if (data) {

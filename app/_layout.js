@@ -39,7 +39,6 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
         libraryJson[key].items[k].updatedAtSince = new Date().toISOString().slice(0, 19)
     }))
 
-    console.log("libraryJson: ", libraryJson)
     storage.set('library', JSON.stringify(libraryJson))
 
     const requestParams = {
@@ -47,7 +46,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
         includes: [Includes.SCANLATION_GROUP, Includes.USER],
         order: { volume: Order.DESC, chapter: Order.DESC },
         contentRating: [MangaContentRating.SAFE, MangaContentRating.EROTICA, MangaContentRating.SUGGESTIVE, MangaContentRating.PORNOGRAPHIC],
-        translatedLanguage: ['vi']
+        translatedLanguage: ['en']
     };
     const updates = storage.getString('updates')
     const updatesJson = updates ? JSON.parse(updates) : {}
@@ -69,7 +68,6 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
         updatesJson[Date.now()] = updateData
     }
 
-    console.log("updatesJson: ", updatesJson)
     storage.set('updates', JSON.stringify(updatesJson))
 
     return BackgroundFetch.BackgroundFetchResult.NewData;

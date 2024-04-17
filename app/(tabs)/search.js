@@ -18,7 +18,7 @@ export default function Search() {
 
     const [searchValue, setSearchValue] = useState(title || '')
     const [searchResult, setSearchResult] = useState([])
-    const [options, setOptions] = useState({ hasAvailableChapters: 'true', availableTranslatedLanguage: ['vi'], includes: ['cover_art', 'author'], offset: 0, limit })
+    const [options, setOptions] = useState({ hasAvailableChapters: 'true', availableTranslatedLanguage: ['en'], includes: ['cover_art', 'author'], offset: 0, limit })
     const [modalVisible, setModalVisible] = useState(false)
     const [tags, setTags] = useState([])
     const [selectedTags, setSelectedTags] = useState(null)
@@ -96,8 +96,8 @@ export default function Search() {
     };
 
     const clearOptions = () => {
-        setOptions({ hasAvailableChapters: 'true', availableTranslatedLanguage: ['vi'], includes: ['cover_art', 'author'], offset: searchResult.length, limit })
-        getData("refresh", null, { hasAvailableChapters: 'true', availableTranslatedLanguage: ['vi'], includes: ['cover_art', 'author'], offset: searchResult.length, limit })
+        setOptions({ hasAvailableChapters: 'true', availableTranslatedLanguage: ['en'], includes: ['cover_art', 'author'], offset: searchResult.length, limit })
+        getData("refresh", null, { hasAvailableChapters: 'true', availableTranslatedLanguage: ['en'], includes: ['cover_art', 'author'], offset: searchResult.length, limit })
     }
 
     const renderFooterList = useMemo(() => {

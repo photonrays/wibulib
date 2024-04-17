@@ -10,16 +10,16 @@ import { SemiBoldText } from './SemiBoldText';
 import CustomDropdown from './CustomDropdown';
 
 const sortByData = [
-    { title: 'Mới cập nhật', value: { updatedAt: Order.DESC } },
-    { title: 'Cập nhật cũ nhất', value: { updatedAt: Order.ASC } },
-    { title: 'Đánh giá giảm dần', value: { rating: Order.DESC } },
-    { title: 'Đánh giá tăng dần', value: { rating: Order.ASC } },
-    { title: 'Lượt theo dõi giảm dần', value: { followedCount: Order.DESC } },
-    { title: 'Lượt theo dõi tăng dần', value: { followedCount: Order.ASC } },
-    { title: 'Mới thêm gần đây', value: { createdAt: Order.DESC } },
-    { title: 'Thêm cũ nhất', value: { createdAt: Order.ASC } },
-    { title: 'Năm tăng dần', value: { year: Order.ASC } },
-    { title: 'Năm giảm dần', value: { year: Order.DESC } }]
+    { title: 'Latest Upload', value: { updatedAt: Order.DESC } },
+    { title: 'Oldest Upload', value: { updatedAt: Order.ASC } },
+    { title: 'Highest Rating', value: { rating: Order.DESC } },
+    { title: 'Lowest Rating', value: { rating: Order.ASC } },
+    { title: 'Most Follow', value: { followedCount: Order.DESC } },
+    { title: 'Fewest Follow', value: { followedCount: Order.ASC } },
+    { title: 'Recently Added', value: { createdAt: Order.DESC } },
+    { title: 'Oldest Added', value: { createdAt: Order.ASC } },
+    { title: 'Year Ascending', value: { year: Order.ASC } },
+    { title: 'Year Descending', value: { year: Order.DESC } }]
 const contentRatingData = [
     { title: 'Safe', value: MangaContentRating.SAFE },
     { title: 'Erotica', value: MangaContentRating.EROTICA },

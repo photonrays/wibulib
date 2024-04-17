@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Image, Pressable, ScrollView, ImageBackground, Dimensions, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, Image, Pressable, ScrollView, ImageBackground, Dimensions, StatusBar, ActivityIndicator } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router'
 import { COLORS } from '../../constants';
 import { Ionicons, MaterialCommunityIcons, Feather, MaterialIcons } from '@expo/vector-icons';
@@ -15,9 +15,10 @@ import ReAnimated, { interpolateColor, useAnimatedStyle, useSharedValue } from '
 
 export default function Manga() {
     const [library, setLibrary] = useMMKVObject('library', storage)
-    const [history, setHistory] = useMMKVObject('history', storage)
+    const [history = {}, setHistory] = useMMKVObject('history', storage)
     const [isVisible, setIsVisible] = useState(false)
     const [modalType, setModalType] = useState('add')
+    const [latestReadChapter, setLatestReadChapter] = useState()
 
     const { id } = useLocalSearchParams()
     const { manga, mangaFeed, updateManga } = useManga()
@@ -53,8 +54,14 @@ export default function Manga() {
         if (!manga || id !== manga?.id) {
             updateManga(id)
         }
-        if (history[id]) {
-            console.log(history[id])
+        if (history[id] && history[id].items.length !== 0) {
+            const latestChapter = Object.entries(history[id].items).reduce((acc, [key, value]) => {
+                if (value.time > acc.time) {
+                    return { key, time: value.time }
+                } else return acc
+            }, { key: '0', time: 0 })
+
+            setLatestReadChapter(latestChapter.key);
         }
     }, [])
 
@@ -66,35 +73,24 @@ export default function Manga() {
                     setHeaderHeight(height)
                 }}
                 style={[styles.header, animatedStyles]}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1, flexShrink: 1, marginRight: 10 }}>
                     <Pressable onPress={() => router.back()} style={{ paddingVertical: 15, paddingHorizontal: 5 }}>
                         <Feather name="arrow-left" size={24} color={COLORS.white} />
                     </Pressable>
-                    <BoldText numberOfLines={1} style={{ fontSize: 20, paddingTop: 5 }}>{title}</BoldText>
+                    <BoldText numberOfLines={1} style={{ fontSize: 20, flex: 1 }}>{title}</BoldText>
                 </View>
-                <View style={{ flexDirection: 'row' }}>
+                {/* <View style={{ flexDirection: 'row' }}>
                     <Pressable>
                         <MaterialIcons name="select-all" size={28} color={COLORS.white} />
                     </Pressable>
                     <Pressable>
                         <MaterialIcons name="deselect" size={28} color={COLORS.white} />
                     </Pressable>
-                </View>
+                </View> */}
             </ReAnimated.View>
             <ScrollView style={{ flex: 1, gap: 10, backgroundColor: COLORS.black, position: 'relative' }} onScroll={handleScroll}>
                 <Stack.Screen options={{
-                    title: "",
                     headerShown: false,
-                    headerTransparent: true,
-                    headerTintColor: '#fff',
-                    headerTitleStyle: {
-                        fontFamily: 'Poppins_700Bold',
-                    },
-                    headerBackVisible: false,
-                    headerLeft: () => <Pressable onPress={() => { router.back() }} style={{ paddingVertical: 15, paddingHorizontal: 5 }}>
-                        <Feather name="arrow-left" size={24} color={COLORS.white} />
-                    </Pressable>,
-
                 }} />
                 <BookmarkModal type={modalType} isVisible={isVisible} setIsVisible={setIsVisible} id={manga?.id} coverArt={coverArt} title={title} library={library} setLibrary={setLibrary} />
                 <ImageBackground source={{ uri: coverArt }} style={[styles.backgroundImage, { paddingTop: 100, width: width }]} >
@@ -133,7 +129,7 @@ export default function Manga() {
                         </Pressable>
                     }
                     <Pressable
-                        // onPress={}
+                        onPress={() => router.push(`/chapter/${latestReadChapter || mangaFeed?.at(-1).id}`)}
                         style={({ pressed }) => [{
                             padding: 6,
                             paddingHorizontal: 20,
@@ -147,7 +143,7 @@ export default function Manga() {
                             opacity: pressed ? 0.7 : 1
                         }]}>
                         <Feather name="book-open" size={24} color={COLORS.white} />
-                        <NormalText>Read</NormalText>
+                        <NormalText>{latestReadChapter ? 'Continue Reading' : 'Read'}</NormalText>
                     </Pressable>
                 </View>
 
@@ -163,9 +159,13 @@ export default function Manga() {
                     </View>
                 </View>
                 <SemiBoldText style={{ marginVertical: 10, fontSize: 16, paddingHorizontal: 15 }}>{mangaFeed?.length} chapters</SemiBoldText>
-                <View style={{ marginBottom: 15 }}>
-                    {mangaFeed?.map((obj, index) => <Chapter key={index} chapter={obj} history={history[id]} />)}
-                </View>
+                {mangaFeed
+                    ? <View style={{ marginBottom: 15 }}>
+                        {mangaFeed?.map((obj, index) => <Chapter key={index} chapter={obj} history={history[id]} />)}
+                    </View>
+                    : <View style={{ flex: 1 }}>
+                        <ActivityIndicator size={'large'} color={COLORS.primary} />
+                    </View>}
             </ScrollView>
         </View>
     );
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingTop: StatusBar.currentHeight,
         paddingHorizontal: 15,
-        zIndex: 10
+        zIndex: 10,
     },
     backgroundImage: {
         position: 'relative',

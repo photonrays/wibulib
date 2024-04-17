@@ -1,7 +1,7 @@
 import React from 'react'
 import { Dimensions, Image, ImageBackground, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native'
 import { COLORS } from '../constants'
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import { useHeaderHeight } from '@react-navigation/elements'
 import { LinearGradient } from 'expo-linear-gradient';
 import getCoverArt from '../utils/getCoverArt';
@@ -26,11 +26,11 @@ export default function PopularCard({ manga }) {
                     <Image source={{ uri: coverArt }} style={styles.image} />
                 </Pressable>
                 <View style={{ flex: 1, maxHeight: 160, overflow: 'hidden', justifyContent: "space-between" }}>
-                    <Link href={`/manga/${manga.id}`}>
+                    <Pressable onPress={() => router.push(`/manga/${manga.id}`)}>
                         <BoldText numberOfLines={6} style={{ fontSize: 18, lineHeight: 22 }}>
                             {mangaTitle}
                         </BoldText>
-                    </Link>
+                    </Pressable>
                     <NormalText numberOfLines={1} style={{ fontSize: 14 }}>
                         {manga.relationships?.[0].attributes?.name}
                     </NormalText>

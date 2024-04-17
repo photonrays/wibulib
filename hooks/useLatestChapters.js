@@ -12,7 +12,7 @@ export default function useLatestChapters(page) {
         includes: [Includes.SCANLATION_GROUP, Includes.USER],
         order: { readableAt: Order.DESC },
         contentRating: [MangaContentRating.SAFE, MangaContentRating.EROTICA, MangaContentRating.SUGGESTIVE, MangaContentRating.PORNOGRAPHIC],
-        translatedLanguage: ['vi']
+        translatedLanguage: ['en']
     };
     const { data, isLoading, error, mutate } = useSWR(['lastestChapter', page, date.getMinutes()], () => getChapter(requestParams))
     const successData = data && data.data.result === "ok" && (data.data)

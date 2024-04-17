@@ -20,8 +20,6 @@ export default function Updates() {
         setUpdates({})
     }
 
-    console.log("updates: ", updates)
-
     const { clearManga } = useManga()
 
     useFocusEffect(

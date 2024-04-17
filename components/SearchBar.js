@@ -59,7 +59,7 @@ export default function SearchBar({ }) {
         }
         const delayDebounceFn = setTimeout(() => {
             if (searchValue.length > 0) {
-                getSearchManga({ title: searchValue, hasAvailableChapters: 'true', availableTranslatedLanguage: ['vi'], includes: ['cover_art', 'author'] })
+                getSearchManga({ title: searchValue, hasAvailableChapters: 'true', availableTranslatedLanguage: ['en'], includes: ['cover_art', 'author'] })
                     .then(data => setSearchResult(data.data?.data))
                     .catch(e => console.log(e))
             }

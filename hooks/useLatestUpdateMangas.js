@@ -8,7 +8,7 @@ export default function useLatestUpdateMangas({ latestChapters, chaptersLoading,
         ids: Object.keys(latestChapters),
         contentRating: [MangaContentRating.EROTICA, MangaContentRating.PORNOGRAPHIC, MangaContentRating.SAFE, MangaContentRating.SUGGESTIVE],
         hasAvailableChapters: "true",
-        availableTranslatedLanguage: ['vi'],
+        availableTranslatedLanguage: ['en'],
         limit: 64
     };
 

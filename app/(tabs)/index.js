@@ -3,7 +3,7 @@ import { FlatList } from 'react-native-gesture-handler'
 import { useState, useRef, useCallback } from 'react'
 import { COLORS } from '../../constants'
 import { SectionTextHeader, PopularCard, DetailCard, Card, NormalText, BoldText, SearchBar } from '../../components';
-import { Stack, router, useFocusEffect } from 'expo-router';
+import { Link, Stack, router, useFocusEffect } from 'expo-router';
 import useFeaturedTitles from '../../hooks/useFeatureTitles';
 import { useManga } from '../../contexts/useManga';
 import ReaAnimated, { interpolateColor, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
@@ -13,6 +13,7 @@ import getCoverArt from '../../utils/getCoverArt';
 import { getMangaTitle } from '../../utils/getMangaTitle';
 import getChapterTitle from '../../utils/getChapterTitle';
 import isEmpty from '../../utils/isEmpty';
+import { AntDesign } from '@expo/vector-icons';
 
 
 export default function index() {
@@ -168,6 +169,10 @@ export default function index() {
                             <ActivityIndicator color={COLORS.primary} size={'large'} />
                         </View>
                     }
+                </View>
+                <View style={{ marginHorizontal: 15, padding: 10, backgroundColor: COLORS.gray, flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                    <AntDesign name="exclamationcircleo" size={24} color={COLORS.white} />
+                    <NormalText style={{}}>This is a third-party app powered by the <Link href="https://api.mangadex.org/docs/" style={{ color: COLORS.primary }}>MangaDex API</Link></NormalText>
                 </View>
             </ScrollView>
         </View>

@@ -9,7 +9,7 @@ export default function useMangaRanking() {
         },
         contentRating: [MangaContentRating.SAFE, MangaContentRating.SUGGESTIVE],
         hasAvailableChapters: "true",
-        availableTranslatedLanguage: ['vi'],
+        availableTranslatedLanguage: ['en'],
     }
 
     return useSearchManga(requestParams)

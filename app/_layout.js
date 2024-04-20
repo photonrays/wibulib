@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router/stack';
 import { Poppins_700Bold, Poppins_400Regular, Poppins_500Medium } from '@expo-google-fonts/poppins'
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, SafeAreaView, StyleSheet, View } from 'react-native';
 import { MangaProvider } from '../contexts/useManga';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as BackgroundFetch from 'expo-background-fetch';
@@ -13,7 +13,7 @@ import { storage } from '../store/MMKV';
 import { Includes, MangaContentRating, Order } from '../api/static';
 import usePushNotification from '../hooks/usePushNotifications';
 import isEmpty from '../utils/isEmpty';
-import { COLORS } from '../constants';
+import { COLORS, images } from '../constants';
 import scheduleNotification from '../utils/scheduleNotification';
 
 const BACKGROUND_FETCH_TASK = 'fetch-library-updates';
@@ -102,9 +102,11 @@ export default function AppLayout() {
     }, [appIsReady]);
 
     if (!appIsReady) {
-        return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.black }}>
-            <Text>Loading</Text>
-        </View>;
+        return <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.black, height: '100%' }}>
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 15 }}>
+                <Image source={images.logo} style={{ width: '100%' }} resizeMode='contain' />
+            </View>
+        </SafeAreaView>
     }
 
     return (

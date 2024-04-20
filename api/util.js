@@ -1,8 +1,6 @@
 import axios from "axios";
-import { encode as btoa } from 'base-64'
 
 const MANGADEX_API_URL = 'https://api.mangadex.org';
-const CORS = process.env.NEW_CORS_URL
 
 const transformArrayForQueryString = function (name, array = undefined) {
     let qs = '';
@@ -65,21 +63,17 @@ export const createHttpsRequestPromise = function (method, path, options) {
         return Promise.reject('ERROR - createHttpsRequestPromise: Parameter `path` cannot be blank');
     }
 
-    const encodedUrl = btoa(`${MANGADEX_API_URL}${path}`).replace(/\+/g, "-").replace(/\//g, "_")
-    console.log('call api...', path, encodedUrl)
+    console.log('call api...', path)
     const httpsRequestOptions = {
         method: method,
-        url: `${CORS}/v1/cors/${encodedUrl}`,
+        url: `${MANGADEX_API_URL}${path}`,
         headers: {
-            'x-requested-with': 'cubari',
             'User-Agent': 'wibulib'
         }
     };
 
-    let body = null;
 
     if (options && ('body' in options)) {
-        body = options.body;
         delete options.body;
     }
 

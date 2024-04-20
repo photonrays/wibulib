@@ -5,7 +5,6 @@ import { MangaProvider } from '../contexts/useManga';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as BackgroundFetch from 'expo-background-fetch';
 import * as TaskManager from 'expo-task-manager';
-import * as Notifications from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Font from 'expo-font'
 import { useCallback, useEffect, useState } from 'react';
@@ -15,19 +14,9 @@ import { Includes, MangaContentRating, Order } from '../api/static';
 import usePushNotification from '../hooks/usePushNotifications';
 import isEmpty from '../utils/isEmpty';
 import { COLORS } from '../constants';
+import scheduleNotification from '../utils/scheduleNotification';
 
 const BACKGROUND_FETCH_TASK = 'fetch-library-updates';
-
-async function schedulePushNotification(title, body) {
-    await Notifications.scheduleNotificationAsync({
-        content: {
-            title,
-            body,
-            data: {},
-        },
-        trigger: { seconds: 2 },
-    });
-}
 
 TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
     const library = storage.getString('library')
@@ -52,7 +41,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
     const updatesJson = updates ? JSON.parse(updates) : {}
     const updateData = {}
 
-    await schedulePushNotification("Fetching new updates", "fetching...");
+    await scheduleNotification("Fetching new updates", "fetching...");
     for (const id of Object.keys(ids)) {
         const { data } = await getMangaIdFeed(id, { ...requestParams, updatedAtSince: ids[id].updatedAtSince })
         if (data && data.data && data.data.length !== 0) {
@@ -60,7 +49,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
             const body = data.data.length === 1
                 ? `${data.data.length} new chapter!`
                 : `${data.data.length} new chapters!`
-            await schedulePushNotification(ids[id].title, body);
+            await scheduleNotification(ids[id].title, body);
         }
     }
 

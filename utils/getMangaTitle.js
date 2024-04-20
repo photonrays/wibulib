@@ -4,8 +4,10 @@ export function getMangaTitle(manga) {
 }
 
 export function getMangaTitleByChapter(chapter) {
-    if (!chapter || !chapter.manga || !chapter.manga.attributes) return ""
-    return chapter.manga.attributes.title?.['en'] || Object.values(chapter.manga.attributes.title)?.[0] || "No title";
+    if (!chapter || !chapter.relationships || !chapter?.relationships?.find((rela) => rela.type == 'manga')) return ""
+    return chapter?.relationships?.find((rela) => rela.type == 'manga')?.attributes?.title?.['en'] ||
+        Object.values(chapter?.relationships?.find((rela) => rela.type == 'manga')?.attributes?.title)?.[0] ||
+        "No title";
 }
 
 

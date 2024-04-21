@@ -110,7 +110,7 @@ export default function AppLayout() {
     }
 
     return (
-        <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: COLORS.black }} onLayout={onLayoutRootView}>
             <MangaProvider>
                 <Stack>
                     <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

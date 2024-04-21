@@ -1,18 +1,19 @@
-import { View, StyleSheet, StatusBar, ScrollView, Dimensions, RefreshControl } from 'react-native';
-import { COLORS } from '../../constants';
-import { BoldText, DetailCard2, SemiBoldText } from '../../components';
-import { Ionicons } from '@expo/vector-icons';
-import { Stack, useFocusEffect } from 'expo-router';
+import { View, StyleSheet, StatusBar, ScrollView, Dimensions, RefreshControl, Pressable } from 'react-native';
+import { Ionicons, Feather } from '@expo/vector-icons';
+import { Stack, router, useFocusEffect } from 'expo-router';
 import { useMMKVObject } from 'react-native-mmkv';
-import { storage } from '../../store/MMKV';
 import { useCallback, useState } from 'react';
-import { useManga } from '../../contexts/useManga';
 import { PaperProvider } from 'react-native-paper';
-import isEmpty from '../../utils/isEmpty';
 import { format } from 'date-fns';
-import { getMangaIdFeed } from '../../api/manga';
-import { Includes, MangaContentRating, Order } from '../../api/static';
-import scheduleNotification from '../../utils/scheduleNotification';
+import { COLORS } from '../constants';
+import { storage } from '../store/MMKV';
+import { BoldText, DetailCard2, SemiBoldText } from '../components';
+import { useManga } from '../contexts/useManga';
+import isEmpty from '../utils/isEmpty';
+import { getMangaIdFeed } from '../api/manga';
+import { Includes, MangaContentRating, Order } from '../api/static';
+import scheduleNotification from '../utils/scheduleNotification';
+
 
 export default function Updates() {
     const width = Dimensions.get('window').width
@@ -56,12 +57,12 @@ export default function Updates() {
         if (!isEmpty(updateData)) {
             setUpdates(prev => ({ ...prev, [Date.now()]: updateData }))
         }
-        setRefreshing(false)
     }
 
     const onRefresh = useCallback(() => {
         setRefreshing(true);
         updateLibrary()
+        setRefreshing(false)
     }, []);
 
     const { clearManga } = useManga()
@@ -82,9 +83,9 @@ export default function Updates() {
                     headerShown: false
                 }} />
                 <View style={[styles.detail, { width: width }]}>
-                    <View style={{ paddingVertical: 15, paddingHorizontal: 5 }}>
-                        <Ionicons name="notifications-sharp" size={24} color={COLORS.white} />
-                    </View>
+                    <Pressable onPress={() => { router.back() }} style={{ paddingVertical: 15, paddingHorizontal: 5 }}>
+                        <Feather name="arrow-left" size={24} color={COLORS.white} />
+                    </Pressable>
                     <BoldText style={{ fontSize: 20 }}>NEW UPDATES</BoldText>
                 </View>
 

@@ -8,11 +8,11 @@ import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-na
 const TabArr = [
     { route: 'index', label: 'Home', type: Icons.FontAwesome, icon: 'home', },
     { route: 'history', label: 'History', type: Icons.Octicons, icon: 'history' },
-    { route: 'updates', label: 'Updates', type: Icons.Ionicons, icon: 'notifications-sharp' },
+    // { route: 'updates', label: 'Updates', type: Icons.Ionicons, icon: 'notifications-sharp' },
     { route: 'library', label: 'Library', type: Icons.Ionicons, icon: 'library' },
     { route: 'search', label: 'Search', type: Icons.FontAwesome6, icon: 'magnifying-glass' },
+    { route: 'more', label: 'More', type: Icons.Entypo, icon: 'dots-three-horizontal' },
 ];
-
 const TabButton = ({ item, onPress, accessibilityState }) => {
     const focused = accessibilityState.selected;
     const viewRef = useRef(null);

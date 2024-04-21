@@ -1,6 +1,6 @@
-import { View, Dimensions, Pressable, StyleSheet, StatusBar, ActivityIndicator } from 'react-native'
+import { View, Dimensions, Pressable, StyleSheet, ActivityIndicator, StatusBar } from 'react-native'
 import { GestureDetector, Gesture, FlatList } from 'react-native-gesture-handler'
-import Animated, { runOnJS, useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
+import { runOnJS } from 'react-native-reanimated'
 import { COLORS } from '../../constants'
 import { Stack, router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import useChapterPages from '../../hooks/useChapterPages'
@@ -49,7 +49,7 @@ export default function Chapter() {
                 setHistory(prev => ({ ...prev, [mangaId || manga?.id]: { ...prev[mangaId || manga?.id], items: { ...prev[mangaId || manga?.id].items, [id]: { title: getChapterTitle(chapterRelation.curr), page: 0 } } } }))
             } else {
                 const page = history[mangaId || manga?.id].items?.[id].page
-                flatlistRef.current.scrollToIndex({ animated: false, index: page == 0 ? parseInt(page - 1) : 0 })
+                flatlistRef.current.scrollToIndex({ animated: false, index: parseInt(page - 1) >= 0 ? parseInt(page - 1) : 0 })
                 sliderRef.current.setNativeProps({ value: parseInt(page) || 0 });
                 setPage(page)
             }
@@ -92,7 +92,7 @@ export default function Chapter() {
     const handlePageChange = (page) => {
         setPage(page)
         currentIndex = page - 1
-        flatlistRef.current.scrollToIndex({ animated: false, index: currentIndex })
+        flatlistRef.current.scrollToIndex({ animated: false, index: currentIndex >= 0 ? currentIndex : 0 })
     }
 
     const onViewableItemsChanged = ({ viewableItems }) => {
@@ -144,7 +144,7 @@ export default function Chapter() {
                         onScrollToIndexFailed={info => {
                             const wait = new Promise(resolve => setTimeout(resolve, 500));
                             wait.then(() => {
-                                flatlistRef.current?.scrollToIndex({ index: info.index, animated: false });
+                                flatlistRef.current?.scrollToIndex({ index: info.index >= 0 ? info.index : 0, animated: false });
                             });
                         }}
                         ListFooterComponent={(<View style={{ width: width, flexDirection: 'row', paddingHorizontal: 15, alignItems: 'center', gap: 50, minHeight: 50 }}>
@@ -187,7 +187,7 @@ export default function Chapter() {
                     <NormalText>{page}</NormalText>
                     <Slider
                         ref={sliderRef}
-                        style={{ flex: 1, display: showDetail ? 'flex' : 'none' }}
+                        style={{ flex: 1, display: showDetail ? 'flex' : 'none', opacity: showDetail ? 1 : 0 }}
                         minimumValue={1}
                         maximumValue={pages.length}
                         onValueChange={page => handlePageChange(page)}

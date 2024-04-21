@@ -13,7 +13,7 @@ import getCoverArt from '../../utils/getCoverArt';
 import { getMangaTitle } from '../../utils/getMangaTitle';
 import getChapterTitle from '../../utils/getChapterTitle';
 import isEmpty from '../../utils/isEmpty';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, Ionicons } from '@expo/vector-icons';
 
 
 export default function index() {
@@ -70,7 +70,10 @@ export default function index() {
                 }}
                 style={[styles.titleContainer, { width: win.width }, animatedStyles]}>
                 <BoldText style={{ fontSize: 20, }}>WIBULIB</BoldText>
-                <SearchBar />
+                {/* <SearchBar /> */}
+                <Pressable onPress={() => router.push('/updates')}>
+                    <Ionicons name="notifications-sharp" size={30} color={COLORS.white} />
+                </Pressable>
             </ReaAnimated.View>
             <ScrollView style={styles.container}
                 onScroll={handleScroll}

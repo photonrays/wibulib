@@ -1,18 +1,19 @@
-import { View, StyleSheet, StatusBar, ScrollView, Dimensions, RefreshControl, Pressable } from 'react-native';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { View, StyleSheet, StatusBar, ScrollView, Dimensions, RefreshControl, Pressable, Image } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { Stack, router, useFocusEffect } from 'expo-router';
 import { useMMKVObject } from 'react-native-mmkv';
 import { useCallback, useState } from 'react';
-import { PaperProvider } from 'react-native-paper';
 import { format } from 'date-fns';
 import { COLORS } from '../constants';
 import { storage } from '../store/MMKV';
-import { BoldText, DetailCard2, SemiBoldText } from '../components';
+import { BoldText, NormalText, SemiBoldText } from '../components';
 import { useManga } from '../contexts/useManga';
 import isEmpty from '../utils/isEmpty';
 import { getMangaIdFeed } from '../api/manga';
 import { Includes, MangaContentRating, Order } from '../api/static';
 import scheduleNotification from '../utils/scheduleNotification';
+import { formatNowDistance } from '../utils/dateFns';
+import getChapterTitle from '../utils/getChapterTitle';
 
 
 export default function Updates() {
@@ -40,23 +41,21 @@ export default function Updates() {
             translatedLanguage: ['en']
         };
 
-        const updateData = {}
-
         await scheduleNotification("Fetching new updates", "fetching...")
         for (const id of Object.keys(ids)) {
             const { data } = await getMangaIdFeed(id, { ...requestParams, updatedAtSince: ids[id].updatedAtSince })
             if (data && data.data && data.data.length !== 0) {
-                updateData[id] = { ...ids[id], items: data.data }
-                const body = data.data.length === 1
-                    ? `${data.data.length} new chapter!`
-                    : `${data.data.length} new chapters!`
-                await scheduleNotification(ids[id].title, body);
+                data.data.forEach(d => {
+                    if (updates[d.attributes.updatedAt.slice(0, 10)] == undefined) {
+                        updates[d.attributes.updatedAt.slice(0, 10)] = []
+                    }
+                    updates[d.attributes.updatedAt.slice(0, 10)].push({ manga: { ...ids[id], id }, chapter: d })
+                    scheduleNotification(ids[id].title, getChapterTitle(d), { url: { pathname: `/chapter/${d.id}`, params: { mangaId: id } } });
+                });
             }
         }
 
-        if (!isEmpty(updateData)) {
-            setUpdates(prev => ({ ...prev, [Date.now()]: updateData }))
-        }
+        setUpdates(updates)
     }
 
     const onRefresh = useCallback(() => {
@@ -75,43 +74,55 @@ export default function Updates() {
 
 
     return (
-        <PaperProvider>
-            <ScrollView style={styles.container} refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }>
-                <Stack.Screen options={{
-                    headerShown: false
-                }} />
-                <View style={[styles.detail, { width: width }]}>
-                    <Pressable onPress={() => { router.back() }} style={{ paddingVertical: 15, paddingHorizontal: 5 }}>
-                        <Feather name="arrow-left" size={24} color={COLORS.white} />
-                    </Pressable>
-                    <BoldText style={{ fontSize: 20 }}>NEW UPDATES</BoldText>
+        <ScrollView style={styles.container} refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
+            <Stack.Screen options={{
+                headerShown: false
+            }} />
+            <View style={[styles.detail, { width: width }]}>
+                <Pressable onPress={() => { router.back() }} style={{ paddingVertical: 15, paddingHorizontal: 5 }}>
+                    <Feather name="arrow-left" size={24} color={COLORS.white} />
+                </Pressable>
+                <BoldText style={{ fontSize: 20 }}>NEW UPDATES</BoldText>
+            </View>
+            <Pressable onPress={() => setUpdates()}><NormalText>Reset</NormalText></Pressable>
+            {isEmpty(updates)
+                ? <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: 60, backgroundColor: COLORS.gray, marginBottom: 20 }}>
+                    <BoldText style={{ fontSize: 16 }}>NO UPDATES</BoldText>
                 </View>
-
-                {isEmpty(updates)
-                    ? <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: 60, backgroundColor: COLORS.gray, marginBottom: 20 }}>
-                        <BoldText style={{ fontSize: 16 }}>NO UPDATES</BoldText>
-                    </View>
-                    : Object.entries(updates).map(([key, value], index) => {
-                        return (
-                            <View key={index} style={{ width: width, marginBottom: 20 }}>
-                                <SemiBoldText style={{ fontSize: 16, marginBottom: 10 }}>{format(Date(key), "dd/MM/yyyy")}</SemiBoldText>
-                                {Object.entries(value).map(([id, v], idx) => {
+                : Object.keys(updates).sort((a, b) => new Date(b) - new Date(a)).map((date, index) => {
+                    return (
+                        <View key={index} style={{ width: width, gap: 10, flex: 1, width: "100%" }}>
+                            <SemiBoldText style={{ fontSize: 16 }}>{format(new Date(date), "dd/MM/yyyy")}</SemiBoldText>
+                            <View >
+                                {updates[date].map((v, idx) => {
                                     return (
-                                        <DetailCard2
-                                            key={idx}
-                                            chapterList={v.items}
-                                            coverArt={v.coverArt}
-                                            mangaId={id}
-                                            mangaTitle={v.title} />
+                                        <Pressable key={idx} onPress={() => router.push({ pathname: `/chapter/${v.chapter.id}`, params: { mangaId: v.manga.id } })}
+                                            style={{ flex: 1, height: 60, flexDirection: 'row', gap: 15, paddingVertical: 5, marginBottom: 10 }}>
+                                            <Image source={{ uri: v.manga.coverArt }} style={{ width: 50, height: 50, borderRadius: 5 }} resizeMode='cover' />
+                                            <View style={{ maxHeight: 60, overflow: 'hidden', justifyContent: "space-between", flex: 1 }}>
+                                                <BoldText numberOfLines={1} style={{ fontSize: 16, lineHeight: 20 }}>
+                                                    {v.manga.title}
+                                                </BoldText>
+                                                {/* <View></View> */}
+                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
+                                                    <NormalText numberOfLines={1} style={{ fontSize: 12, flex: 1, flexShrink: 1 }}>
+                                                        {getChapterTitle(v.chapter)}
+                                                    </NormalText>
+                                                    <NormalText numberOfLines={1} style={{ fontSize: 12 }}>
+                                                        {formatNowDistance(new Date(v.chapter.attributes.updatedAt)) || ""}
+                                                    </NormalText>
+                                                </View>
+                                            </View>
+                                        </Pressable>
                                     )
                                 })}
                             </View>
-                        )
-                    })}
-            </ScrollView>
-        </PaperProvider>
+                        </View>
+                    )
+                })}
+        </ScrollView>
     );
 }
 
@@ -119,7 +130,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.black,
-        padding: 15
+        padding: 15,
     },
     modalContainer: {
         alignSelf: 'center',

@@ -12,9 +12,9 @@ import { getMangaIdFeed } from '../api/manga';
 import { storage } from '../store/MMKV';
 import { Includes, MangaContentRating, Order } from '../api/static';
 import usePushNotification from '../hooks/usePushNotifications';
-import isEmpty from '../utils/isEmpty';
 import { COLORS, images } from '../constants';
 import scheduleNotification from '../utils/scheduleNotification';
+import useNotificationObserver from '../hooks/useNotificationObserver';
 
 const BACKGROUND_FETCH_TASK = 'fetch-library-updates';
 
@@ -24,7 +24,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
 
     const ids = {}
     Object.entries(libraryJson).forEach(([key, value]) => Object.entries(value.items).forEach(([k, val]) => {
-        ids[k] = ({ ...val, updatedAtSince: val.updatedAtSince || new Date(Date.now() - 24 * 3600 * 1000).toISOString().slice(0, 19) })
+        ids[k] = ({ ...val, updatedAtSince: new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString().slice(0, 19) })
         libraryJson[key].items[k].updatedAtSince = new Date().toISOString().slice(0, 19)
     }))
 
@@ -39,22 +39,19 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
     };
     const updates = storage.getString('updates')
     const updatesJson = updates ? JSON.parse(updates) : {}
-    const updateData = {}
 
-    await scheduleNotification("Fetching new updates", "fetching...");
+    await scheduleNotification("Fetching new updates", "fetching...")
     for (const id of Object.keys(ids)) {
         const { data } = await getMangaIdFeed(id, { ...requestParams, updatedAtSince: ids[id].updatedAtSince })
         if (data && data.data && data.data.length !== 0) {
-            updateData[id] = { ...ids[id], items: data.data }
-            const body = data.data.length === 1
-                ? `${data.data.length} new chapter!`
-                : `${data.data.length} new chapters!`
-            await scheduleNotification(ids[id].title, body);
+            data.data.forEach(d => {
+                if (updatesJson[d.attributes.updatedAt.slice(0, 10)] == undefined) {
+                    updatesJson[d.attributes.updatedAt.slice(0, 10)] = []
+                }
+                updatesJson[d.attributes.updatedAt.slice(0, 10)].push({ manga: { ...ids[id], id }, chapter: d })
+                scheduleNotification(ids[id].title, getChapterTitle(d), { url: { pathname: `/chapter/${d.id}`, params: { mangaId: id } } });
+            });
         }
-    }
-
-    if (!isEmpty(updateData)) {
-        updatesJson[Date.now()] = updateData
     }
 
     storage.set('updates', JSON.stringify(updatesJson))
@@ -73,7 +70,8 @@ async function registerBackgroundFetchAsync() {
 
 export default function AppLayout() {
     const [appIsReady, setAppIsReady] = useState(false);
-    const { } = usePushNotification()
+    usePushNotification()
+    useNotificationObserver()
 
     useEffect(() => {
         (async () => {

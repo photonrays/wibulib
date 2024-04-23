@@ -41,10 +41,10 @@ export default function More() {
                         <NormalText style={{ fontSize: 12 }}>wibulib 0.0.1</NormalText>
                     </View>
                 </Pressable>
-                <Pressable style={({ pressed }) => [styles.button, { backgroundColor: pressed ? COLORS.gray : COLORS.black }]}>
+                {/* <Pressable style={({ pressed }) => [styles.button, { backgroundColor: pressed ? COLORS.gray : COLORS.black }]}>
                     <Octicons name="gear" size={22} color={COLORS.white} />
                     <NormalText style={{ fontSize: 16 }}>Settings</NormalText>
-                </Pressable>
+                </Pressable> */}
             </View>
 
         </ScrollView>

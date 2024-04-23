@@ -13,10 +13,9 @@ const initialOptionKeys = ["hasAvailableChapters", "availableTranslatedLanguage"
 
 export default function Search() {
     const win = Dimensions.get('window')
-    const { title } = useLocalSearchParams()
     const { clearManga } = useManga()
 
-    const [searchValue, setSearchValue] = useState(title || '')
+    const [searchValue, setSearchValue] = useState('')
     const [searchResult, setSearchResult] = useState([])
     const [options, setOptions] = useState({ hasAvailableChapters: 'true', availableTranslatedLanguage: ['en'], includes: ['cover_art', 'author'], offset: 0, limit })
     const [modalVisible, setModalVisible] = useState(false)
@@ -34,11 +33,6 @@ export default function Search() {
             clearManga()
         }, [])
     );
-
-    useEffect(() => {
-        setSearchValue(title)
-        getData("refresh", title)
-    }, [title])
 
     useEffect(() => {
         getMangaTag()
@@ -78,7 +72,7 @@ export default function Search() {
             setUI(true);
             isLoading.current = true;
 
-            const { data } = await getSearchManga({ ...(customOptions || options), offset: type == "loadMore" ? searchResult.length : 0, limit: limit, title: title || searchValue })
+            const { data } = await getSearchManga({ ...(customOptions || options), offset: type == "loadMore" ? searchResult.length : 0, limit: limit, title: searchValue })
             await new Promise((resolve) => setTimeout(resolve, 500));
             isLoading.current = false;
             if (data.data.length < limit) {

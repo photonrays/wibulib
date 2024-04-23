@@ -1,12 +1,12 @@
 import * as Notifications from 'expo-notifications';
 
-export default async function scheduleNotification(title, body) {
+export default async function scheduleNotification(title, body, data) {
     await Notifications.scheduleNotificationAsync({
         content: {
             title,
             body,
-            data: {},
+            data
         },
-        trigger: { seconds: 2 },
+        trigger: null,
     });
 }

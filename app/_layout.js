@@ -24,7 +24,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
 
     const ids = {}
     Object.entries(libraryJson).forEach(([key, value]) => Object.entries(value.items).forEach(([k, val]) => {
-        ids[k] = ({ ...val, updatedAtSince: new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString().slice(0, 19) })
+        ids[k] = ({ ...val, updatedAtSince: val.updatedAtSince || new Date(Date.now() - 24 * 3600 * 1000).toISOString().slice(0, 19) })
         libraryJson[key].items[k].updatedAtSince = new Date().toISOString().slice(0, 19)
     }))
 
@@ -40,7 +40,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
     const updates = storage.getString('updates')
     const updatesJson = updates ? JSON.parse(updates) : {}
 
-    await scheduleNotification("Fetching new updates", "fetching...")
+    const identifier = await scheduleNotification("Fetching new updates", "fetching...")
     for (const id of Object.keys(ids)) {
         const { data } = await getMangaIdFeed(id, { ...requestParams, updatedAtSince: ids[id].updatedAtSince })
         if (data && data.data && data.data.length !== 0) {
@@ -54,6 +54,10 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
         }
     }
 
+    if (identifier) {
+        await Notifications.dismissNotificationAsync(identifier)
+    }
+
     storage.set('updates', JSON.stringify(updatesJson))
 
     return BackgroundFetch.BackgroundFetchResult.NewData;
@@ -61,7 +65,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
 
 async function registerBackgroundFetchAsync() {
     return BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
-        minimumInterval: 24 * 60 * 60, // 1 day
+        minimumInterval: 6 * 60 * 60, // 6 hours
         stopOnTerminate: false, // android only,
         startOnBoot: true, // android only
     });

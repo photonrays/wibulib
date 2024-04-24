@@ -1,4 +1,4 @@
-import { View, StyleSheet, StatusBar, ScrollView, Dimensions, RefreshControl, Pressable, Image } from 'react-native';
+import { View, StyleSheet, StatusBar, ScrollView, Dimensions, RefreshControl, Pressable, Image, ToastAndroid } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Stack, router, useFocusEffect } from 'expo-router';
 import { useMMKVObject } from 'react-native-mmkv';
@@ -14,7 +14,7 @@ import { Includes, MangaContentRating, Order } from '../api/static';
 import scheduleNotification from '../utils/scheduleNotification';
 import { formatNowDistance } from '../utils/dateFns';
 import getChapterTitle from '../utils/getChapterTitle';
-
+import * as Notifications from 'expo-notifications';
 
 export default function Updates() {
     const width = Dimensions.get('window').width
@@ -41,7 +41,8 @@ export default function Updates() {
             translatedLanguage: ['en']
         };
 
-        await scheduleNotification("Fetching new updates", "fetching...")
+        // const identifier = await scheduleNotification("Fetching new updates", "fetching...")
+        const identifier = await scheduleNotification("Fetching new updates", "fetching...")
         for (const id of Object.keys(ids)) {
             const { data } = await getMangaIdFeed(id, { ...requestParams, updatedAtSince: ids[id].updatedAtSince })
             if (data && data.data && data.data.length !== 0) {
@@ -53,6 +54,10 @@ export default function Updates() {
                     scheduleNotification(ids[id].title, getChapterTitle(d), { url: { pathname: `/chapter/${d.id}`, params: { mangaId: id } } });
                 });
             }
+        }
+
+        if (identifier) {
+            await Notifications.dismissNotificationAsync(identifier)
         }
 
         setUpdates(updates)

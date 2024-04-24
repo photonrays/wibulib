@@ -36,6 +36,14 @@
           "usesCleartextTraffic": true 
           } 
         }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow wibulib to access your photos.",
+          "savePhotosPermission": "Allow wibulib to save photos.",
+          "isAccessMediaLocationEnabled": true
+        }
       ]
     ],
     "extra": {

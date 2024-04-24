@@ -155,9 +155,6 @@ export default function index() {
                 <View style={{ marginBottom: 20, marginHorizontal: 15 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                         <SectionTextHeader style={{ marginBottom: 10 }}>Top Mangas</SectionTextHeader>
-                        <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}>
-                            <NormalText>View All</NormalText>
-                        </Pressable>
                     </View>
                     {!topMangaIsLoading && topManga?.data
                         ? <FlatList

@@ -5,16 +5,15 @@ import useLatestUpdateMangas from "./useLatestUpdateMangas";
 
 
 export default function useLatestChapters(page) {
-    const date = new Date;
     let requestParams = {
         limit: 64,
         offset: (page - 1) * 64,
         includes: [Includes.SCANLATION_GROUP, Includes.USER],
         order: { readableAt: Order.DESC },
-        contentRating: [MangaContentRating.SAFE, MangaContentRating.EROTICA, MangaContentRating.SUGGESTIVE, MangaContentRating.PORNOGRAPHIC],
+        contentRating: [MangaContentRating.SAFE, MangaContentRating.SUGGESTIVE],
         translatedLanguage: ['en']
     };
-    const { data, isLoading, error, mutate } = useSWR(['lastestChapter', page, date.getMinutes()], () => getChapter(requestParams))
+    const { data, isLoading, error, mutate } = useSWR(['lastestChapter', page], () => getChapter(requestParams))
     const successData = data && data.data.result === "ok" && (data.data)
     const latestChapters = {}
 

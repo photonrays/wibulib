@@ -20,7 +20,7 @@ let currentIndex = 0;
 
 export default function Chapter() {
     const { id, mangaId } = useLocalSearchParams();
-    const { pages } = useChapterPages(id)
+    const { pages, isLoading } = useChapterPages(id)
     const width = Dimensions.get('window').width
     const [showDetail, setShowDetail] = useState(false)
     const { manga, mangaFeed, updateManga } = useManga();
@@ -49,9 +49,11 @@ export default function Chapter() {
                 setHistory(prev => ({ ...prev, [mangaId || manga?.id]: { ...prev[mangaId || manga?.id], items: { ...prev[mangaId || manga?.id].items, [id]: { title: getChapterTitle(chapterRelation.curr), page: 0 } } } }))
             } else {
                 const page = history[mangaId || manga?.id].items?.[id].page
-                flatlistRef.current.scrollToIndex({ animated: false, index: parseInt(page - 1) >= 0 ? parseInt(page - 1) : 0 })
-                sliderRef.current.setNativeProps({ value: parseInt(page) || 0 });
-                setPage(page)
+                if (pages && !isLoading) {
+                    flatlistRef.current.scrollToIndex({ animated: false, index: parseInt(page - 1) >= 0 ? parseInt(page - 1) : 0 })
+                    sliderRef.current.setNativeProps({ value: parseInt(page) || 0 });
+                    setPage(page)
+                }
             }
         }
     }, [id, manga, chapterRelation])
@@ -131,7 +133,7 @@ export default function Chapter() {
             </View>
             <GestureDetector gesture={Gesture.Exclusive(tap)}>
                 <Zoom style={{ flex: 1 }}>
-                    <FlatList
+                    {!isLoading && pages.length !== 0 && <FlatList
                         initialNumToRender={5}
                         viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
                         onViewableItemsChanged={onViewableItemsChanged}
@@ -173,7 +175,7 @@ export default function Chapter() {
                                     : <BoldText style={{ textAlign: 'center' }}>No next chapter</BoldText>}
                             </View>
                         </View>)}
-                    />
+                    />}
                 </Zoom>
             </GestureDetector>
             <View style={[styles.detail, { bottom: 10, width: width, display: showDetail ? 'flex' : 'none' }]}>

@@ -6,7 +6,7 @@ export default function useLatestUpdateMangas({ latestChapters, chaptersLoading,
     const requestParams = {
         includes: [Includes.COVER_ART],
         ids: Object.keys(latestChapters),
-        contentRating: [MangaContentRating.EROTICA, MangaContentRating.PORNOGRAPHIC, MangaContentRating.SAFE, MangaContentRating.SUGGESTIVE],
+        contentRating: [MangaContentRating.SAFE, MangaContentRating.SUGGESTIVE],
         hasAvailableChapters: "true",
         availableTranslatedLanguage: ['en'],
         limit: 64

@@ -1,66 +1,42 @@
-import { View, StyleSheet, StatusBar, ScrollView, Dimensions, Pressable } from 'react-native';
+import { View, StyleSheet, StatusBar, ScrollView, Dimensions, Pressable, Platform } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
 import { COLORS } from '../constants';
-import { BoldText } from '../components';
+import { BoldText, NormalText, SemiBoldText } from '../components';
 import { storage } from '../store/MMKV';
 import * as FileSystem from 'expo-file-system';
 import { format } from 'date-fns';
-import * as MediaLibrary from 'expo-media-library';
+import { encode as btoa } from 'base-64'
+import { useMMKVObject, useMMKVString } from 'react-native-mmkv';
+import { useEffect } from 'react';
 
 
 export default function Storage() {
     const width = Dimensions.get('window').width
-    const [permissionResponse, requestPermission] = MediaLibrary.usePermissions();
+    const [backupLocation, setBackupLocation] = useMMKVString('backup-location', storage)
+    const [library, setLibrary] = useMMKVObject('library', storage)
 
-
-    async function saveFileAsync(file_uri) {
-        try {
-            if (permissionResponse.status !== 'granted') {
-                await requestPermission();
-            }
-            if (permissionResponse.status === "granted") {
-                const asset = await MediaLibrary.createAssetAsync(file_uri);
-                const album = await MediaLibrary.getAlbumAsync('Download');
-                if (album === null) {
-                    await MediaLibrary.createAlbumAsync('Download', asset, false);
-                } else {
-                    await MediaLibrary.addAssetsToAlbumAsync([asset], 'Download', false);
-                }
-                return true;
-            }
-            return false;
-        } catch (error) {
-            console.log('ERR: saveFileAsync', error);
-            throw error;
-        }
-    }
-
-
-    const backupLibraryData = async () => {
+    const setStorageLocation = async () => {
         if (Platform.OS === "android") {
             const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
             if (permissions.granted) {
-                const base64 = await FileSystem.readAsStringAsync(
-                    FileSystem.documentDirectory + 'SQLite/example.db',
-                    {
-                        encoding: FileSystem.EncodingType.Base64
-                    }
-                );
+                setBackupLocation(permissions.directoryUri)
+            } else
+                return;
 
-                await FileSystem.StorageAccessFramework.createFileAsync(permissions.directoryUri, 'example.db', 'application/octet-stream')
-                    .then(async (uri) => {
-                        await FileSystem.writeAsStringAsync(uri, base64, { encoding: FileSystem.EncodingType.Base64 });
-                    })
-                    .catch((e) => console.log(e));
-            } else {
-                console.log("Permission not granted");
-            }
-        } else {
-            await Sharing.shareAsync(FileSystem.documentDirectory + 'SQLite/example.db');
         }
+    }
 
-        try {
+    const backupLibraryData = async () => {
+        if (Platform.OS === "android") {
+            if (!backupLocation || backupLocation === '') {
+                const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+                if (permissions.granted) {
+                    setBackupLocation(permissions.directoryUri)
+                } else
+                    return;
+            }
+
             const data = storage.getString('library'); // Get data for key 'library'
 
             if (!data) {
@@ -69,30 +45,20 @@ export default function Storage() {
             }
 
             const formattedDate = format(new Date(), 'dd-MM-yyyy');
-            const fileUri = `${documentDirectory}${`wibulib-backup-${formattedDate}.txt`}`;
-            console.log("file URI: ", fileUri);
 
-            // Write parsed data to a file within document directory
-            FileSystem.StorageAccessFramework.createFileAsync(documentDirectory, `wibulib-backup-${formattedDate}`, 'text/plain').then((uri) => console.log(uri)).catch(e => console.log(e))
-            writeAsStringAsync(fileUri, data).then(async () => {
-                try {
-                    const asset = await MediaLibrary.createAssetAsync(fileUri);
-                    const album = await MediaLibrary.getAlbumAsync('Download');
-                    if (album == null) {
-                        await MediaLibrary.createAlbumAsync('Download', asset, false);
-                    } else {
-                        await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
-                    }
-                } catch (e) {
-                    console.log(e);
-                }
-            })
+            await FileSystem.StorageAccessFramework.createFileAsync(backupLocation, `wibulib-backup-${formattedDate}.txt`, 'text/plain')
+                .then(async (uri) => {
+                    await FileSystem.writeAsStringAsync(uri, btoa(data), { encoding: FileSystem.EncodingType.Base64 })
+                    console.log("Backup success!")
+                })
+                .catch(e => console.log(e));
 
-            console.log('Backup successful');
-        } catch (error) {
-            console.error('Error during backup:', error);
         }
     };
+
+    const restoreLibraryData = () => {
+
+    }
 
     return (
         <ScrollView style={styles.container}>
@@ -106,12 +72,23 @@ export default function Storage() {
                 <BoldText style={{ fontSize: 20 }}>Data and storage</BoldText>
             </View>
 
-            <View>
-                <Pressable onPress={backupLibraryData}>
-                    <BoldText>
-                        Backup
-                    </BoldText>
+            <View style={{ gap: 10 }}>
+                <Pressable onPress={setStorageLocation} style={{ marginBottom: 10 }}>
+                    <SemiBoldText style={{ fontSize: 16 }}>Storage location</SemiBoldText>
+                    <NormalText>{backupLocation || "Not set"}</NormalText>
                 </Pressable>
+
+                <View style={{ gap: 10 }}>
+                    <SemiBoldText>Backup and Restore</SemiBoldText>
+                    <View style={{ flexDirection: 'row', width: '100%' }}>
+                        <Pressable onPress={backupLibraryData} style={[styles.button, { borderTopLeftRadius: 20, borderBottomLeftRadius: 20 }]}>
+                            <NormalText>Create backup</NormalText>
+                        </Pressable>
+                        <Pressable onPress={restoreLibraryData} style={[styles.button, { borderTopRightRadius: 20, borderBottomRightRadius: 20 }]}>
+                            <NormalText>Restore backup</NormalText>
+                        </Pressable>
+                    </View>
+                </View>
             </View>
 
         </ScrollView>
@@ -122,12 +99,18 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.black,
-        padding: 15
+        padding: 15,
     },
     detail: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 10,
         paddingTop: StatusBar.currentHeight,
+    },
+    button: {
+        paddingVertical: 15,
+        backgroundColor: COLORS.gray,
+        flex: 1,
+        alignItems: 'center'
     }
 })

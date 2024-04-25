@@ -21,7 +21,7 @@ export default function More() {
             </View>
 
             <View>
-                {/* <Pressable
+                <Pressable
                     style={({ pressed }) => [styles.button, { backgroundColor: pressed ? COLORS.gray : COLORS.black }]}
                     onPressOut={() => { router.navigate('/storage') }}
                 >
@@ -30,7 +30,7 @@ export default function More() {
                         <NormalText style={{ fontSize: 16 }}>Data and storages</NormalText>
                         <NormalText style={{ fontSize: 12 }}>Manual or Automatic backup</NormalText>
                     </View>
-                </Pressable> */}
+                </Pressable>
                 <Pressable
                     style={({ pressed }) => [styles.button, { backgroundColor: pressed ? COLORS.gray : COLORS.black }]}
                     onPress={() => { router.push('/about') }}

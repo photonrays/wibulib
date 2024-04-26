@@ -116,7 +116,7 @@ export default function Library() {
                     </View>
                     <BoldText style={{ fontSize: 20 }}>LIBRARY</BoldText>
                 </View>
-
+                <Pressable onPress={() => setLibrary({ 0: { name: 'default', items: {} } })}><NormalText>Reset</NormalText></Pressable>
                 <View style={{ marginBottom: 10 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                         <SemiBoldText style={{ fontSize: 16, marginBottom: 5 }}>Category</SemiBoldText>

@@ -28,7 +28,7 @@ export default function More() {
                     <MaterialIcons name="storage" size={24} color={COLORS.white} />
                     <View>
                         <NormalText style={{ fontSize: 16 }}>Data and storages</NormalText>
-                        <NormalText style={{ fontSize: 12 }}>Manual or Automatic backup</NormalText>
+                        <NormalText style={{ fontSize: 12 }}>Storage location, Backup and restore</NormalText>
                     </View>
                 </Pressable>
                 <Pressable
@@ -38,13 +38,9 @@ export default function More() {
                     <AntDesign name="exclamationcircleo" size={24} color={COLORS.white} />
                     <View>
                         <NormalText style={{ fontSize: 16 }}>About</NormalText>
-                        <NormalText style={{ fontSize: 12 }}>wibulib 0.0.1</NormalText>
+                        <NormalText style={{ fontSize: 12 }}>wibulib v1.0.0</NormalText>
                     </View>
                 </Pressable>
-                {/* <Pressable style={({ pressed }) => [styles.button, { backgroundColor: pressed ? COLORS.gray : COLORS.black }]}>
-                    <Octicons name="gear" size={22} color={COLORS.white} />
-                    <NormalText style={{ fontSize: 16 }}>Settings</NormalText>
-                </Pressable> */}
             </View>
 
         </ScrollView>

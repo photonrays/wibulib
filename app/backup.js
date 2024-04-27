@@ -14,7 +14,7 @@ import scheduleNotification from '../utils/scheduleNotification';
 
 
 export default function Backup() {
-    const [checked, setChecked] = useState({ "library": true, "history": true, "setting": true })
+    const [checked, setChecked] = useState({ "library": true, "history": true, "settings": true })
     const [library = { 0: { name: 'default', items: {} } }] = useMMKVObject('library', storage)
     const [history = {}] = useMMKVObject('history', storage)
     const [backupLocation] = useMMKVString('backup-location', storage)
@@ -23,7 +23,7 @@ export default function Backup() {
         const backup = {
             library: checked.library ? library : null,
             history: checked.history ? history : null,
-            settings: checked.setting ? backupLocation : null
+            settings: checked.settings ? backupLocation : null
         }
 
         const formattedDate = format(new Date(), 'dd-MM-yyyy_HH-mm');
@@ -81,11 +81,11 @@ export default function Backup() {
                 <View style={styles.checkBoxContainer}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                         <Checkbox
-                            value={checked.setting}
+                            value={checked.settings}
                             onValueChange={() => {
-                                setChecked(prev => ({ ...prev, setting: !prev.setting }));
+                                setChecked(prev => ({ ...prev, settings: !prev.settings }));
                             }}
-                            color={checked.setting ? COLORS.primary : undefined}
+                            color={checked.settings ? COLORS.primary : undefined}
                         />
                         <NormalText>App settings</NormalText>
                     </View>

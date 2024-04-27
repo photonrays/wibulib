@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router/stack';
-import { Poppins_700Bold, Poppins_400Regular, Poppins_500Medium } from '@expo-google-fonts/poppins'
+import { Poppins_700Bold, Poppins_400Regular, Poppins_500Medium, Poppins_200ExtraLight } from '@expo-google-fonts/poppins'
 import { Image, SafeAreaView, StyleSheet, View } from 'react-native';
 import { MangaProvider } from '../contexts/useManga';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -85,6 +85,7 @@ export default function AppLayout() {
                     Poppins_400Regular,
                     Poppins_700Bold,
                     Poppins_500Medium,
+                    Poppins_200ExtraLight
                 });
                 registerBackgroundFetchAsync()
             }

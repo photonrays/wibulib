@@ -2,18 +2,23 @@ import { View, StyleSheet, StatusBar, ScrollView, Dimensions, Pressable, Platfor
 import { Feather } from '@expo/vector-icons';
 import { Stack, router } from 'expo-router';
 import { COLORS } from '../constants';
-import { BoldText, NormalText, SemiBoldText } from '../components';
+import { BoldText, LightText, NormalText, SemiBoldText } from '../components';
 import { storage } from '../store/MMKV';
 import * as FileSystem from 'expo-file-system';
-import { decode } from 'base-64'
-import { useMMKVObject, useMMKVString } from 'react-native-mmkv';
-import * as DocumentPicker from 'expo-document-picker';
+import { useMMKVString } from 'react-native-mmkv';
+
+function getTailPath(uriString) {
+    const indexOfPrimary = uriString.indexOf("primary:");
+    if (indexOfPrimary !== -1) {
+        return "/storage/emulated/0/" + uriString.substring(indexOfPrimary + "primary:".length);
+    } else {
+        return uriString;
+    }
+}
 
 export default function Storage() {
     const width = Dimensions.get('window').width
     const [backupLocation, setBackupLocation] = useMMKVString('backup-location', storage)
-    const [library, setLibrary] = useMMKVObject('library', storage)
-    const [history, setHistory] = useMMKVObject('history', storage)
 
     const setStorageLocation = async () => {
         if (Platform.OS === "android") {
@@ -37,33 +42,6 @@ export default function Storage() {
         }
     };
 
-    const restoreLibraryData = async () => {
-        let result = await DocumentPicker.getDocumentAsync({
-            copyToCacheDirectory: true
-        });
-
-        if (!result.canceled) {
-            const base64 = await FileSystem.readAsStringAsync(
-                result.assets[0].uri,
-                {
-                    encoding: FileSystem.EncodingType.Base64
-                }
-            );
-
-
-            if (base64) {
-                const data = JSON.parse(decode(base64))
-
-                if (data.library) {
-                    setLibrary(data.library)
-                }
-                if (data.history) {
-                    setHistory(data.history)
-                }
-            }
-        }
-    }
-
 
     return (
         <ScrollView style={styles.container}>
@@ -77,25 +55,38 @@ export default function Storage() {
                 <BoldText style={{ fontSize: 20 }}>Data and storage</BoldText>
             </View>
 
-            <Pressable onPress={() => setBackupLocation()}><NormalText>Reset</NormalText></Pressable>
+            {/* <Pressable onPress={() => setBackupLocation()}><NormalText>Reset</NormalText></Pressable> */}
 
-            <View style={{ gap: 20 }}>
-                <View style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}>
-                    <SemiBoldText style={{ marginBottom: 10 }}>Storage location</SemiBoldText>
-                    <Pressable
-                        onPress={setStorageLocation}
-                        style={({ pressed }) => [
-                            styles.storageButton,
-                            {
-                                backgroundColor: !backupLocation ? COLORS.primary : COLORS.black,
-                                opacity: pressed ? 0.7 : 1
-                            }]}>
-                        <NormalText>{backupLocation || "Select storage location"}</NormalText>
-                    </Pressable>
+            <View style={{ paddingHorizontal: 5 }}>
+                <View style={{ marginBottom: 40 }}>
+                    <SemiBoldText style={{ fontSize: 15 }}>Storage location</SemiBoldText>
+                    {backupLocation ?
+                        <Pressable
+                            onPress={setStorageLocation}
+                            style={({ pressed }) => [
+                                styles.storageButton,
+                                {
+                                    opacity: pressed ? 0.7 : 1,
+                                }]}>
+                            <LightText style={{ fontSize: 12 }}>{getTailPath(decodeURIComponent(backupLocation))}</LightText>
+                        </Pressable>
+                        : <Pressable
+                            onPress={setStorageLocation}
+                            style={({ pressed }) => [
+                                styles.storageButton,
+                                {
+                                    alignItems: 'center',
+                                    marginTop: 10,
+                                    paddingVertical: 10,
+                                    backgroundColor: COLORS.gray,
+                                    opacity: pressed ? 0.7 : 1,
+                                }]}>
+                            <NormalText>{"Select storage location"}</NormalText>
+                        </Pressable>}
                 </View>
 
                 <View style={{ gap: 10 }}>
-                    <SemiBoldText>Backup and Restore</SemiBoldText>
+                    <SemiBoldText style={{ fontSize: 15 }}>Backup and Restore</SemiBoldText>
                     <View style={{ flexDirection: 'row', width: '100%' }}>
                         <Pressable
                             onPress={navigateToBackup}
@@ -103,7 +94,7 @@ export default function Storage() {
                             <NormalText>Create backup</NormalText>
                         </Pressable>
                         <Pressable
-                            onPress={restoreLibraryData}
+                            onPress={() => router.push('/restore')}
                             style={({ pressed }) => [styles.button, { borderTopRightRadius: 20, borderBottomRightRadius: 20, opacity: pressed ? 0.7 : 1 }]}>
                             <NormalText>Restore backup</NormalText>
                         </Pressable>
@@ -126,15 +117,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 10,
         paddingTop: StatusBar.currentHeight,
+        marginBottom: 20
     },
     storageButton: {
         width: '100%',
-        alignItems: 'center',
-        paddingVertical: 10,
         borderRadius: 10,
     },
     button: {
-        paddingVertical: 15,
+        paddingVertical: 13,
         backgroundColor: COLORS.gray,
         flex: 1,
         alignItems: 'center'

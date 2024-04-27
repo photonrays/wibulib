@@ -170,10 +170,6 @@ export default function index() {
                         </View>
                     }
                 </View>
-                <View style={{ marginHorizontal: 15, padding: 10, backgroundColor: COLORS.gray, flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                    <AntDesign name="exclamationcircleo" size={24} color={COLORS.white} />
-                    <NormalText style={{}}>This is a third-party app powered by the <Link href="https://api.mangadex.org/docs/" style={{ color: COLORS.primary }}>MangaDex API</Link></NormalText>
-                </View>
             </ScrollView>
         </View>
     );

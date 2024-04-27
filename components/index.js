@@ -2,6 +2,7 @@ import { SectionTextHeader } from "./SectionTextHeader";
 import { NormalText } from "./NormalText";
 import { SemiBoldText } from "./SemiBoldText";
 import { BoldText } from "./BoldText";
+import { LightText } from "./LightText";
 import PopularCard from "./PopularCard"
 import Card from "./Card"
 import Card2 from "./Card2"
@@ -20,6 +21,7 @@ export {
     NormalText,
     BoldText,
     SemiBoldText,
+    LightText,
     PopularCard,
     DetailCard,
     DetailCard2,
